@@ -1,0 +1,3 @@
+- [x] 修復 `GeniusService.kt` 中的 `BuildConfig` 引用問題
+- [x] 執行 Gradle Build 驗證
+- [x] 部署並測試搜尋功能
