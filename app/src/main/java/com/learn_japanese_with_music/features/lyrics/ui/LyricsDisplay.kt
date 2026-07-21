@@ -1,4 +1,4 @@
-package com.learn_japanese_with_music.lyrics_display
+package com.learn_japanese_with_music.features.lyrics.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,28 +17,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.learn_japanese_with_music.ui.theme.appTheme
-
-/**
- * 代表一段歌詞及其讀音的資料結構
- * @param text 主要顯示的日文（漢字或假名）
- * @param reading 顯示在下方的讀音（片假名或平假名）
- */
-data class LyricSegment(
-    val text: String,
-    val reading: String = ""
-)
-
-/**
- * 代表一行歌詞
- */
-data class LyricLine(
-    val segments: List<LyricSegment>
-)
+import com.learn_japanese_with_music.core.theme.appTheme
+import com.learn_japanese_with_music.features.lyrics.model.LyricLine
+import com.learn_japanese_with_music.features.lyrics.model.LyricSegment
+import com.learn_japanese_with_music.features.lyrics.model.SongData
 
 /**
  * lyrics ui

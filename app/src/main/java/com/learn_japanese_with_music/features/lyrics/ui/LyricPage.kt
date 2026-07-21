@@ -1,4 +1,4 @@
-package com.learn_japanese_with_music.ui.pages
+package com.learn_japanese_with_music.features.lyrics.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -6,13 +6,16 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -21,6 +24,8 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -41,6 +46,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,17 +58,19 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.learn_japanese_with_music.ui.components.HomeRectangleButton
-import com.learn_japanese_with_music.lyrics_display.SongData
-import com.learn_japanese_with_music.lyrics_display.GeniusSong
-import com.learn_japanese_with_music.lyrics_display.LyricsDisplay
-import com.learn_japanese_with_music.lyrics_display.LyricsRepository
+import com.learn_japanese_with_music.core.components.HomeRectangleButton
+import com.learn_japanese_with_music.features.lyrics.model.GeniusSong
+import com.learn_japanese_with_music.features.lyrics.model.SongData
+import com.learn_japanese_with_music.features.lyrics.repository.LyricsRepository
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun LyricPage(repository: LyricsRepository) {
     var query by remember { mutableStateOf("前前前世") }
@@ -72,6 +80,32 @@ fun LyricPage(repository: LyricsRepository) {
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val focusManager = LocalFocusManager.current
+    val isImeVisible = WindowInsets.isImeVisible
+
+    // 當鍵盤收合時，主動清除焦點以隱藏游標
+    LaunchedEffect(isImeVisible) {
+        if (!isImeVisible) {
+            focusManager.clearFocus()
+        }
+    }
+
+    // 封裝搜尋邏輯
+    fun performSearch() {
+        focusManager.clearFocus() // 開始搜尋時先清除焦點收起鍵盤
+        scope.launch {
+            isLoading = true
+            errorMessage = null
+            lyrics = null
+            try {
+                searchResults = repository.searchSongs(query)
+            } catch (e: Exception) {
+                errorMessage = e.message
+            } finally {
+                isLoading = false
+            }
+        }
+    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -149,22 +183,13 @@ fun LyricPage(repository: LyricsRepository) {
                                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                                 unfocusedBorderColor = MaterialTheme.colorScheme.outline
                             ),
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                            keyboardActions = KeyboardActions(
+                                onSearch = { performSearch() }
+                            ),
                             trailingIcon = {
                                 FilledIconButton (
-                                    onClick = {
-                                        scope.launch {
-                                            isLoading = true
-                                            errorMessage = null
-                                            lyrics = null
-                                            try {
-                                                searchResults = repository.searchSongs(query)
-                                            } catch (e: Exception) {
-                                                errorMessage = e.message
-                                            } finally {
-                                                isLoading = false
-                                            }
-                                        }
-                                    },
+                                    onClick = { performSearch() },
                                     colors = IconButtonDefaults.filledIconButtonColors(
                                         containerColor = MaterialTheme.colorScheme.primaryContainer,
                                         contentColor = MaterialTheme.colorScheme.onPrimaryContainer

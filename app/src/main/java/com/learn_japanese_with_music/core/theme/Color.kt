@@ -1,4 +1,4 @@
-package com.learn_japanese_with_music.ui.theme
+package com.learn_japanese_with_music.core.theme
 
 import androidx.compose.ui.graphics.Color
 

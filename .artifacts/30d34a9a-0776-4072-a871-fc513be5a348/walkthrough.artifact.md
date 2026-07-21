@@ -1,26 +1,38 @@
-# Walkthrough - 擴充 Genius API 資料模型與搜尋 UI 優化
+# Walkthrough - 程式碼架構重構 (Feature-oriented)
 
-本任務已完成 `GeniusService` 資料模型的擴充，並將搜尋結果介面優化為 2 欄位的網格佈局。
+本任務已完成將專案結構從簡單的目錄排列重構為以 **Feature (功能相關性)** 為核心的架構。
 
-## 變更內容
+## 重構後的目錄結構
 
-### 1. 資料模型更新
-- 在 [GeniusService.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/lyrics_display/GeniusService.kt) 中更新了 `GeniusSong` 資料類別，新增了 `song_art_image_thumbnail_url` 欄位。這使得我們能直接從 API 取得歌曲的縮圖網址。
+```text
+com.learn_japanese_with_music
+├── core/                       (跨功能通用的核心元件)
+│   ├── network/                <- RetrofitClient (通用的連線設定)
+│   ├── theme/                  <- appTheme, Color, Type
+│   └── components/             <- 通用的 UI 組件 (如 HomeRectangleButton)
+├── features/                   (獨立的功能模組)
+│   └── lyrics/                 (歌詞功能模組)
+│       ├── api/                <- GeniusService
+│       ├── repository/         <- LyricsRepository
+│       ├── processor/          <- JapaneseProcessor
+│       ├── model/              <- LyricsModels.kt (包含 SongData, GeniusSong 等)
+│       └── ui/                 <- LyricPage.kt, LyricsDisplay.kt
+└── MainActivity.kt             (導航與進入點)
+```
 
-### 2. 搜尋結果 UI 優化
-- 在 [LyricPage.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/ui/pages/LyricPage.kt) 中：
-    - 將原本的 `LazyColumn` 替換為 `LazyVerticalGrid`，設定為 **1 列顯示 2 個卡片** (`GridCells.Fixed(2)`)。
-    - 重新設計了 `SearchResultItem`：
-        - 使用 **歌曲縮圖作為卡片背景**。
-        - 底部疊加了 **半透明漸層遮罩**，確保在各種背景下文字都能清晰顯示。
-        - 卡片呈現 **1:1 的正方形比例**，外觀更加現代化且一致。
-        - 顯示歌曲標題（粗體）與歌手名稱。
+## 變更細節
 
-## 驗證結果
-- [x] Gradle 編譯成功。
-- [x] App 成功部署至裝置。
-- [x] 搜尋功能正常，搜尋結果以 2 欄網格顯示並帶有歌曲圖片。
+### 1. 職責分離與封裝
+- **`RetrofitClient`**：從 `GeniusService.kt` 中抽離，歸類到 `core/network` 下，方便未來其他功能模組共用連線邏輯。
+- **資料模型統一**：將原本分散的歌詞相關資料模型統一整理至 `features/lyrics/model/LyricsModels.kt`，提升了資料結構的透明度。
+- **UI 元件重命名**：將 `Lyrics_ui.kt` 重新命名為 `LyricsDisplay.kt`，更符合其 Composable 函數的名稱與職責。
 
-> [!TIP]
-> **UI 體驗提升**
-> 現在搜尋歌曲時，視覺上能更直觀地透過封面圖識別歌曲，且網格佈局提升了單一畫面能顯示的資訊量。
+### 2. 目錄整潔度提升
+- 移除了原有的 `lyrics_display/`、`ui/pages/`、`ui/components/` 與 `ui/theme/` 目錄，改以更具邏輯性的 `core/` 與 `features/` 結構呈現。
+
+### 3. 穩定性驗證
+- 全域更新了所有受影響檔案的 `package` 宣告與 `import` 語句。
+- 已通過 Gradle 編譯測試 (`app:assembleDebug`)，確認專案功能完好。
+
+## 後續維護建議
+- 若未來新增功能（例如：使用者播放清單），請在 `features/` 下建立新的目錄（如 `features/playlists/`），遵循相同的 `api`, `repository`, `model`, `ui` 結構。

@@ -4,12 +4,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.learn_japanese_with_music.lyrics_display.JapaneseProcessor
-import com.learn_japanese_with_music.lyrics_display.LyricsRepository
-import com.learn_japanese_with_music.ui.pages.LyricPage
-import com.learn_japanese_with_music.ui.theme.appTheme
-
 import androidx.lifecycle.lifecycleScope
+import com.learn_japanese_with_music.core.theme.appTheme
+import com.learn_japanese_with_music.features.lyrics.processor.JapaneseProcessor
+import com.learn_japanese_with_music.features.lyrics.repository.LyricsRepository
+import com.learn_japanese_with_music.features.lyrics.ui.LyricPage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -20,6 +19,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
+        // 使用單例初始化
         lifecycleScope.launch(Dispatchers.IO) {
             japaneseProcessor.initialize(this@MainActivity)
         }

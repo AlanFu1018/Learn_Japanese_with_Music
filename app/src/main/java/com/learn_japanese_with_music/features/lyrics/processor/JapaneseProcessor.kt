@@ -1,7 +1,9 @@
-package com.learn_japanese_with_music.lyrics_display
+package com.learn_japanese_with_music.features.lyrics.processor
 
 import android.content.Context
 import android.util.Log
+import com.learn_japanese_with_music.features.lyrics.model.LyricLine
+import com.learn_japanese_with_music.features.lyrics.model.LyricSegment
 import com.worksap.nlp.sudachi.Dictionary
 import com.worksap.nlp.sudachi.DictionaryFactory
 import com.worksap.nlp.sudachi.Tokenizer

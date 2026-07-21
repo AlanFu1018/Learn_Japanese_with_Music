@@ -1,4 +1,7 @@
-- [x] 更新 `GeniusService.kt` 中的 `GeniusSong` 資料模型，加入圖片網址
-- [x] 修改 `LyricPage.kt` 中的搜尋結果列表為 2 欄位網格佈局
-- [x] 重新設計 `SearchResultItem` 卡片，以圖片為背景並在底部顯示文字
-- [x] 驗證編譯與執行結果
+- [x] 建立新的目錄結構 (`core/`, `features/lyrics/`)
+- [x] 搬移並拆分 `GeniusService.kt` (將 `RetrofitClient` 移至 `core/network`)
+- [x] 搬移並整理 `lyrics_display` 目錄下的檔案至 `features/lyrics`
+- [x] 搬移 `ui/theme` 與 `ui/components` 至 `core`
+- [x] 遷移 `LyricPage.kt` 至 `features/lyrics/ui`
+- [x] 全域更新 package 宣告與 import 路徑
+- [x] 驗證 Gradle 編譯

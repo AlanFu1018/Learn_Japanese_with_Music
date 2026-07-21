@@ -1,5 +1,9 @@
-package com.learn_japanese_with_music.lyrics_display
+package com.learn_japanese_with_music.features.lyrics.repository
 
+import com.learn_japanese_with_music.core.network.RetrofitClient
+import com.learn_japanese_with_music.features.lyrics.model.GeniusSong
+import com.learn_japanese_with_music.features.lyrics.model.SongData
+import com.learn_japanese_with_music.features.lyrics.processor.JapaneseProcessor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup

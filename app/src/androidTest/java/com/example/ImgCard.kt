@@ -8,7 +8,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import coil.Coil
 import coil.compose.AsyncImage
-import com.learn_japanese_with_music.ui.theme.appTheme
+import com.learn_japanese_with_music.core.theme.appTheme
 import org.junit.runner.RunWith
 
 //Icons.Default.Image
