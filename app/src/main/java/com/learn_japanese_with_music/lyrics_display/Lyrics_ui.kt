@@ -151,13 +151,13 @@ fun LyricPreview() {
     val sampleSongData = SongData(
         title = "前前前世",
         artist = "RADWIMPS",
-        lyrics = sampleLyrics
+        lyrics = sampleLyrics,
+        cover = "nothing"
     )
 
     appTheme {
         Column() {
             LyricsDisplay(songData = sampleSongData)
         }
-
     }
 }

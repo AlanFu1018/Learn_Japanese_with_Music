@@ -32,6 +32,7 @@ data class GeniusSong(
     val title: String,
     val full_title: String,
     val url: String,
+    val song_art_image_thumbnail_url: String,
     val primary_artist: GeniusArtist
 )
 
@@ -45,12 +46,12 @@ data class GeniusArtist(
 data class SongData(
     val title: String,
     val artist: String,
+    val cover: String,
     val lyrics: List<LyricLine>
 )
 
 object RetrofitClient {
     private const val BASE_URL = "https://api.genius.com/"
-    // 使用使用者提供的 Token
     private const val ACCESS_TOKEN = BuildConfig.GENIUS_API_TOKEN
 
     private val authInterceptor = Interceptor { chain ->

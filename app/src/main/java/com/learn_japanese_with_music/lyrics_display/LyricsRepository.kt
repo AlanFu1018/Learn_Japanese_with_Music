@@ -26,6 +26,7 @@ class LyricsRepository(private val japaneseProcessor: JapaneseProcessor) {
         // 嘗試抓取歌名與歌手 (從 Genius 的特定標籤或標題)
         val title = doc.select("h1").first()?.text() ?: "Unknown Title"
         val artist = doc.select("a[href*=/artists/]").first()?.text() ?: "Unknown Artist"
+        val cover = doc.select("img[alt^='Cover art for']").first()?.attr("src") ?: "https://www.vecteezy.com/vector-art/29796931-music-icon-in-trendy-flat-style-isolated-on-white-background-music-silhouette-symbol-for-your-website-design-logo-app-ui-vector-illustration-eps10"
 
         //抓取歌詞並去掉冗於
         val lyricContainers = doc.select("div[data-lyrics-container=true]")
@@ -47,7 +48,8 @@ class LyricsRepository(private val japaneseProcessor: JapaneseProcessor) {
         SongData(
             title = title,
             artist = artist,
-            lyrics = processedLyrics
+            lyrics = processedLyrics,
+            cover = cover
         )
     }
 }

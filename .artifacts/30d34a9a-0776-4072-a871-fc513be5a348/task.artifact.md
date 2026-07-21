@@ -1,3 +1,4 @@
-- [x] 修復 `GeniusService.kt` 中的 `BuildConfig` 引用問題
-- [x] 執行 Gradle Build 驗證
-- [x] 部署並測試搜尋功能
+- [x] 更新 `GeniusService.kt` 中的 `GeniusSong` 資料模型，加入圖片網址
+- [x] 修改 `LyricPage.kt` 中的搜尋結果列表為 2 欄位網格佈局
+- [x] 重新設計 `SearchResultItem` 卡片，以圖片為背景並在底部顯示文字
+- [x] 驗證編譯與執行結果
