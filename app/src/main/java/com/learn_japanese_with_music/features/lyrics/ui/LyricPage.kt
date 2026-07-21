@@ -194,10 +194,13 @@ fun LyricPage(repository: LyricsRepository) {
                                         containerColor = MaterialTheme.colorScheme.primaryContainer,
                                         contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                                     ),
-                                    modifier = Modifier.size(63.dp).offset(x = -1.dp),
+                                    modifier = Modifier.size(55.dp).offset(x = -6.dp),
                                     shape = CircleShape
                                 ) {
-                                    Icon(Icons.Default.Search, contentDescription = "Search")
+                                    Icon(Icons.Default.Search,
+                                        contentDescription = "Search",
+                                        modifier = Modifier.size(30.dp)
+                                    )
                                 }
                             },
                         )
