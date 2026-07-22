@@ -28,27 +28,18 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.ModalDrawerSheet
-import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -70,25 +61,28 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.learn_japanese_with_music.core.components.HomeRectangleButton
+import com.learn_japanese_with_music.core.data.SettingsManager
 import com.learn_japanese_with_music.features.lyrics.model.GeniusSong
 import com.learn_japanese_with_music.features.lyrics.model.LyricSegment
 import com.learn_japanese_with_music.features.lyrics.model.SongData
 import com.learn_japanese_with_music.features.lyrics.processor.JapaneseProcessor
 import com.learn_japanese_with_music.features.lyrics.repository.LyricsRepository
 import com.learn_japanese_with_music.features.vocabulary.ui.VocabularyCardContent
-import com.worksap.nlp.sudachi.Tokenizer
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalLayoutApi::class, androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
-fun LyricPage(repository: LyricsRepository) {
+fun LyricPage(
+    repository: LyricsRepository,
+    settingsManager: SettingsManager,
+    onMenuClick: () -> Unit
+) {
     var query by remember { mutableStateOf("前前前世") }
     var searchResults by remember { mutableStateOf<List<GeniusSong>>(emptyList()) }
     var lyrics by remember { mutableStateOf<SongData?>(null) }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val focusManager = LocalFocusManager.current
     val isImeVisible = WindowInsets.isImeVisible
 
@@ -97,12 +91,10 @@ fun LyricPage(repository: LyricsRepository) {
     val sheetState = rememberModalBottomSheetState()
     var showBottomSheet by remember { mutableStateOf(false) }
 
-    // Sudachi 分詞模式狀態
-    var selectedMode by remember { mutableStateOf(Tokenizer.SplitMode.C) }
-    val modes = listOf(Tokenizer.SplitMode.A, Tokenizer.SplitMode.B, Tokenizer.SplitMode.C)
     val japaneseProcessor = JapaneseProcessor.getInstance()
+    val selectedMode = settingsManager.sudachiSplitMode
 
-    // 當模式改變時，重新處理歌詞
+    // 當 Settings 中的模式改變時，即時更新目前的歌詞顯示
     LaunchedEffect(selectedMode) {
         lyrics?.let { currentLyrics ->
             if (currentLyrics.rawLyrics.isNotEmpty()) {
@@ -138,184 +130,134 @@ fun LyricPage(repository: LyricsRepository) {
         }
     }
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            ModalDrawerSheet {
-                Column(
-                    modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text("Learn Japanese with Song",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold))
-
-                    Spacer(modifier = Modifier.height(16.dp))
-                    NavigationDrawerItem(
-                        label = { Text("Search for lyrics", style = MaterialTheme.typography.titleMedium) },
-                        selected = false,
-                        onClick = {
-                            scope.launch { drawerState.close() }
-                            lyrics = null
-                        },
-                        icon = { Icon(Icons.Default.Search, contentDescription = null) }
-                    )
-                    NavigationDrawerItem(
-                        label = { Text("Setting", style = MaterialTheme.typography.titleMedium) },
-                        selected = false,
-                        onClick = {
-                            scope.launch { drawerState.close() }
-                        },
-                        icon = { Icon(Icons.Default.Settings, contentDescription = null) }
-                    )
-                }
-            }
-        }
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
     ) {
 
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 48.dp, start = 16.dp, end = 16.dp)
         ) {
 
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(top = 48.dp, start = 16.dp, end = 16.dp)
-            ) {
-
-                // Search Row - Only show if lyrics are not displayed
-                if (lyrics == null) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(modifier = Modifier.padding(end = 8.dp)){
-                            HomeRectangleButton(onClick = { scope.launch { drawerState.open() } })
-                        }
-
-                        OutlinedTextField(
-                            value = query,
-                            onValueChange = { query = it },
-                            placeholder = {
-                                Text("Search",
-                                color = MaterialTheme.colorScheme.primaryContainer
-                                )
-                            },
-                            modifier = Modifier.weight(1f),
-                            shape = CircleShape,
-                            textStyle = MaterialTheme.typography.bodyMedium.copy(
-                                color = MaterialTheme.colorScheme.primaryContainer
-                            ),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedTextColor = MaterialTheme.colorScheme.primaryContainer,
-                                unfocusedTextColor = MaterialTheme.colorScheme.primaryContainer,
-                                focusedContainerColor = Color.White,
-                                unfocusedContainerColor = Color.White,
-                                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.outline
-                            ),
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                            keyboardActions = KeyboardActions(
-                                onSearch = { performSearch() }
-                            ),
-                            trailingIcon = {
-                                FilledIconButton (
-                                    onClick = { performSearch() },
-                                    colors = IconButtonDefaults.filledIconButtonColors(
-                                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                                    ),
-                                    modifier = Modifier.size(55.dp).offset(x = -6.dp),
-                                    shape = CircleShape
-                                ) {
-                                    Icon(Icons.Default.Search,
-                                        contentDescription = "Search",
-                                        modifier = Modifier.size(30.dp)
-                                    )
-                                }
-                            },
-                        )
+            // Search Row
+            if (lyrics == null) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(modifier = Modifier.padding(end = 8.dp)){
+                        HomeRectangleButton(onClick = onMenuClick)
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-
-                if (isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
-                }
-
-                errorMessage?.let {
-                    Text(text = "Error: $it", color = MaterialTheme.colorScheme.error)
-                }
-
-                if (lyrics != null) {
-                    BackHandler {
-                        lyrics = null
-                    }
-                    
-                    // 模式切換按鈕
-                    SingleChoiceSegmentedButtonRow(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 8.dp)
-                    ) {
-                        modes.forEachIndexed { index, mode ->
-                            SegmentedButton(
-                                shape = SegmentedButtonDefaults.itemShape(index = index, count = modes.size),
-                                onClick = { selectedMode = mode },
-                                selected = selectedMode == mode
+                    OutlinedTextField(
+                        value = query,
+                        onValueChange = { query = it },
+                        placeholder = {
+                            Text("Search",
+                            color = MaterialTheme.colorScheme.primaryContainer
+                            )
+                        },
+                        modifier = Modifier.weight(1f),
+                        shape = CircleShape,
+                        textStyle = MaterialTheme.typography.bodyMedium.copy(
+                            color = MaterialTheme.colorScheme.primaryContainer
+                        ),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = MaterialTheme.colorScheme.primaryContainer,
+                            unfocusedTextColor = MaterialTheme.colorScheme.primaryContainer,
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White,
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                        ),
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                        keyboardActions = KeyboardActions(
+                            onSearch = { performSearch() }
+                        ),
+                        trailingIcon = {
+                            FilledIconButton (
+                                onClick = { performSearch() },
+                                colors = IconButtonDefaults.filledIconButtonColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                ),
+                                modifier = Modifier.size(55.dp).offset(x = -6.dp),
+                                shape = CircleShape
                             ) {
-                                Text(mode.name)
+                                Icon(Icons.Default.Search,
+                                    contentDescription = "Search",
+                                    modifier = Modifier.size(30.dp)
+                                )
                             }
-                        }
-                    }
-
-                    LyricsDisplay(
-                        songData = lyrics!!,
-                        modifier = Modifier.weight(1f),
-                        onSegmentClick = { segment ->
-                            selectedSegment = segment
-                            showBottomSheet = true
-                        }
+                        },
                     )
-
-                } else if (searchResults.isNotEmpty()) {
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(2),
-                        modifier = Modifier.weight(1f),
-                        contentPadding = PaddingValues(8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(searchResults) { song ->
-                            SearchResultItem(song = song) {
-                                scope.launch {
-                                    isLoading = true
-                                    errorMessage = null
-                                    try {
-                                        lyrics = repository.fetchLyricsFromUrl(song.url)
-                                    } catch (e: Exception) {
-                                        errorMessage = e.message
-                                    } finally {
-                                        isLoading = false
-                                    }
-                                }
-                            }
-                        }
-                    }
-                } else if (!isLoading && errorMessage == null) {
-                    Text(text = "Search for a song to see lyrics", style = MaterialTheme.typography.bodyMedium)
                 }
+
+                Spacer(modifier = Modifier.height(16.dp))
             }
 
-            // 單字卡 BottomSheet
-            if (showBottomSheet && selectedSegment != null) {
-                ModalBottomSheet(
-                    onDismissRequest = { showBottomSheet = false },
-                    sheetState = sheetState
-                ) {
-                    VocabularyCardContent(segment = selectedSegment!!)
+            if (isLoading) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+            }
+
+            errorMessage?.let {
+                Text(text = "Error: $it", color = MaterialTheme.colorScheme.error)
+            }
+
+            if (lyrics != null) {
+                BackHandler {
+                    lyrics = null
                 }
+
+                //display lyrics
+                LyricsDisplay(
+                    songData = lyrics!!,
+                    modifier = Modifier.weight(1f),
+                    onSegmentClick = { segment ->
+                        selectedSegment = segment
+                        showBottomSheet = true
+                    }
+                )
+
+                //show the result of searching
+            } else if (searchResults.isNotEmpty()) {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    modifier = Modifier.weight(1f),
+                    contentPadding = PaddingValues(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(searchResults) { song ->
+                        SearchResultItem(song = song) {
+                            scope.launch {
+                                isLoading = true
+                                errorMessage = null
+                                try {
+                                    lyrics = repository.fetchLyricsFromUrl(song.url)
+                                } catch (e: Exception) {
+                                    errorMessage = e.message
+                                } finally {
+                                    isLoading = false
+                                }
+                            }
+                        }
+                    }
+                }
+            } else if (!isLoading && errorMessage == null) {
+                Text(text = "Search for a song to see lyrics", style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+
+        // word card
+        if (showBottomSheet && selectedSegment != null) {
+            ModalBottomSheet(
+                onDismissRequest = { showBottomSheet = false },
+                sheetState = sheetState
+            ) {
+                VocabularyCardContent(segment = selectedSegment!!)
             }
         }
     }

@@ -84,7 +84,7 @@ fun LyricsDisplay(
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 30.dp, bottom = 14.dp, start = 14.dp, end = 14.dp)
+                .padding(top = 0.dp, bottom = 14.dp, start = 14.dp, end = 14.dp)
         ) {
             item {
                 Column(modifier = Modifier.padding(bottom = 16.dp)) {

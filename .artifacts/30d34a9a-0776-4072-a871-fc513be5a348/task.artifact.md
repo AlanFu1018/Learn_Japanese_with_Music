@@ -1,8 +1,7 @@
-- [x] 更新 `LyricsModels.kt`：在 `SongData` 中加入 `rawLyrics`
-- [x] 修改 `JapaneseProcessor.kt`：`processLine` 支援 `SplitMode` 參數
-- [x] 修改 `LyricsRepository.kt`：在抓取歌詞時存入原始歌詞行
-- [x] 修改 `LyricPage.kt`：
-    - 新增 `SplitMode` 切換狀態
-    - 新增模式切換 UI (A/B/C)
-    - 實作模式切換時的即時重新分詞邏輯
-- [x] 驗證不同模式下的分詞變化
+- [x] 建立 `SettingsManager` 用於持久化設定
+- [x] 重構 `MainActivity` 提升側邊欄層級
+- [x] 建立 `SettingsPage` 介面
+- [x] 修改 `LyricPage` 移除內建側邊欄並支援外部分導航
+- [x] 更新 `RetrofitClient` 以動態讀取 API Token
+- [x] 串接 `JapaneseProcessor` 使用持久化的分詞模式
+- [x] 驗證導航與設定儲存功能

@@ -9,11 +9,13 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
     private const val BASE_URL = "https://api.genius.com/"
-    private const val ACCESS_TOKEN = BuildConfig.GENIUS_API_TOKEN
+    
+    // 提供一個可變的 Provider，讓攔截器能讀取到最新的 Token
+    var tokenProvider: () -> String = { BuildConfig.GENIUS_API_TOKEN }
 
     private val authInterceptor = Interceptor { chain ->
         val request = chain.request().newBuilder()
-            .addHeader("Authorization", "Bearer $ACCESS_TOKEN")
+            .addHeader("Authorization", "Bearer ${tokenProvider()}")
             .build()
         chain.proceed(request)
     }

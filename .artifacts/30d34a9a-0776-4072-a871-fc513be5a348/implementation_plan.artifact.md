@@ -1,38 +1,45 @@
-# 實作 Sudachi 分詞模式 (SplitMode) 切換功能
+# 實作 Settings 頁面與全域導航架構重構
 
-本計畫旨在為歌詞頁面新增一個切換按鈕，允許使用者在 Sudachi 的三種分詞模式（Mode A, B, C）之間切換，並即時更新歌詞的拆分效果。
+本計畫旨在建立設定功能，並將側邊欄（Drawer）邏輯從單一頁面提升至全域層級，提升 App 的架構整潔度。
 
 ## 建議的變更
 
-### 1. 資料模型更新
+### 1. 建立設定管理層 (`core/data`)
 
-#### [MODIFY] [LyricsModels.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/features/lyrics/model/LyricsModels.kt)
-- 在 `SongData` 中新增 `rawLyrics: List<String>` 欄位，用於儲存原始未處理的歌詞行，以便在切換模式時重新處理。
+#### [NEW] [SettingsManager.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/core/data/SettingsManager.kt)
+- 使用 `SharedPreferences` 儲存：
+    - `genius_api_token` (預設為 `BuildConfig.GENIUS_API_TOKEN`)
+    - `sudachi_split_mode` (預設為 `C`)
 
-### 2. 分詞處理器優化
+### 2. 重構導航與側邊欄架構 (`MainActivity`)
 
-#### [MODIFY] [JapaneseProcessor.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/features/lyrics/processor/JapaneseProcessor.kt)
-- 更新 `processLine` 方法，新增 `mode: Tokenizer.SplitMode` 參數（預設為 `SplitMode.C`）。
-- 在呼叫 `currentTokenizer.tokenize(text)` 時傳入該模式。
+#### [MODIFY] [MainActivity.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/MainActivity.kt)
+- 將 `ModalNavigationDrawer` 與 `DrawerState` 移入 `MainActivity`。
+- 新增 `currentScreen` 狀態來控制顯示 `LyricPage` 還是 `SettingsPage`。
+- 在 `DrawerContent` 中實作切換邏輯。
 
-### 3. Repository 更新
+### 3. 建立與調整 UI 頁面 (`features`)
 
-#### [MODIFY] [LyricsRepository.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/features/lyrics/repository/LyricsRepository.kt)
-- 更新 `fetchLyricsFromUrl`，在建立 `SongData` 時存入過濾後的原始歌詞行。
-
-### 4. UI 介面更新
+#### [NEW] [SettingsPage.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/features/settings/ui/SettingsPage.kt)
+- 實作設定介面：
+    - 頂部包含 `HomeRectangleButton` 用於開啟側邊欄。
+    - **Syntax Analyzer Mode**：RadioButton 切換 A/B/C。
+    - **API Key**：TextField 修改 Token。
+    - 實作自動儲存至 `SettingsManager`。
 
 #### [MODIFY] [LyricPage.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/features/lyrics/ui/LyricPage.kt)
-- 新增 `selectedMode` 狀態（預設為 `Tokenizer.SplitMode.C`）。
-- 在歌詞顯示區域上方新增一個切換控制項（如 `TabRow` 或 `SegmentedButton`）。
-- 當 `selectedMode` 改變時，使用 `JapaneseProcessor` 重新處理 `rawLyrics` 並更新顯示內容。
+- 移除 `ModalNavigationDrawer` 相關程式碼，使其轉變為純粹的「內容頁面」。
+- 接受 `onMenuClick` 回呼，供其 `HomeRectangleButton` 呼叫。
+
+### 4. 基礎設施整合 (`core/network`)
+
+#### [MODIFY] [RetrofitClient.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/core/network/RetrofitClient.kt)
+- 更新攔截器，使其在發起請求前從 `SettingsManager` 讀取最新的 Token。
 
 ## 驗證計畫
 
 ### 手動驗證
-1. 搜尋並開啟一首歌（如「前前前世」）。
-2. 在歌詞上方切換 A、B、C 模式。
-3. 觀察「國立國會圖書館」或「前前前世」等複合詞的拆分變化：
-   - **Mode A**: 拆分最細。
-   - **Mode C**: 保持完整長單詞。
-4. 確認點擊新拆分出的單字仍能正確彈出單字卡。
+1.  **全域側邊欄**：確認在「搜尋頁」與「設定頁」都能透過左上角按鈕開啟同一個側邊欄。
+2.  **頁面切換**：在側邊欄點擊「Search」或「Setting」，主畫面應正確切換且側邊欄自動關閉。
+3.  **設定持久化**：在設定頁修改 Token 並重啟 App，確認設定值有被保留。
+4.  **功能連動**：修改 Token 後，搜尋功能應使用新 Token 進行請求。
