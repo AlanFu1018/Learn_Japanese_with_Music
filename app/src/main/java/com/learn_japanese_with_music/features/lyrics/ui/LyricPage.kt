@@ -43,6 +43,9 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
@@ -70,8 +73,10 @@ import com.learn_japanese_with_music.core.components.HomeRectangleButton
 import com.learn_japanese_with_music.features.lyrics.model.GeniusSong
 import com.learn_japanese_with_music.features.lyrics.model.LyricSegment
 import com.learn_japanese_with_music.features.lyrics.model.SongData
+import com.learn_japanese_with_music.features.lyrics.processor.JapaneseProcessor
 import com.learn_japanese_with_music.features.lyrics.repository.LyricsRepository
 import com.learn_japanese_with_music.features.vocabulary.ui.VocabularyCardContent
+import com.worksap.nlp.sudachi.Tokenizer
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalLayoutApi::class, androidx.compose.material3.ExperimentalMaterial3Api::class)
@@ -91,6 +96,23 @@ fun LyricPage(repository: LyricsRepository) {
     var selectedSegment by remember { mutableStateOf<LyricSegment?>(null) }
     val sheetState = rememberModalBottomSheetState()
     var showBottomSheet by remember { mutableStateOf(false) }
+
+    // Sudachi 分詞模式狀態
+    var selectedMode by remember { mutableStateOf(Tokenizer.SplitMode.C) }
+    val modes = listOf(Tokenizer.SplitMode.A, Tokenizer.SplitMode.B, Tokenizer.SplitMode.C)
+    val japaneseProcessor = JapaneseProcessor.getInstance()
+
+    // 當模式改變時，重新處理歌詞
+    LaunchedEffect(selectedMode) {
+        lyrics?.let { currentLyrics ->
+            if (currentLyrics.rawLyrics.isNotEmpty()) {
+                val newProcessedLyrics = currentLyrics.rawLyrics.map { line ->
+                    japaneseProcessor.processLine(line, selectedMode)
+                }
+                lyrics = currentLyrics.copy(lyrics = newProcessedLyrics)
+            }
+        }
+    }
 
     // 當鍵盤收合時，主動清除焦點以隱藏游標
     LaunchedEffect(isImeVisible) {
@@ -230,6 +252,24 @@ fun LyricPage(repository: LyricsRepository) {
                     BackHandler {
                         lyrics = null
                     }
+                    
+                    // 模式切換按鈕
+                    SingleChoiceSegmentedButtonRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp)
+                    ) {
+                        modes.forEachIndexed { index, mode ->
+                            SegmentedButton(
+                                shape = SegmentedButtonDefaults.itemShape(index = index, count = modes.size),
+                                onClick = { selectedMode = mode },
+                                selected = selectedMode == mode
+                            ) {
+                                Text(mode.name)
+                            }
+                        }
+                    }
+
                     LyricsDisplay(
                         songData = lyrics!!,
                         modifier = Modifier.weight(1f),

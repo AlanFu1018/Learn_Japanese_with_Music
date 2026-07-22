@@ -1,4 +1,8 @@
-- [x] 建立 `features/vocabulary/ui/VocabularyCard.kt`
-- [x] 修改 `LyricsDisplay.kt`：為 `LyricSegment` 增加點擊事件與回傳機制
-- [x] 修改 `LyricPage.kt`：整合 `ModalBottomSheet` 顯示單字卡
-- [x] 驗證功能：點擊單字後能彈出卡片顯示正確內容
+- [x] 更新 `LyricsModels.kt`：在 `SongData` 中加入 `rawLyrics`
+- [x] 修改 `JapaneseProcessor.kt`：`processLine` 支援 `SplitMode` 參數
+- [x] 修改 `LyricsRepository.kt`：在抓取歌詞時存入原始歌詞行
+- [x] 修改 `LyricPage.kt`：
+    - 新增 `SplitMode` 切換狀態
+    - 新增模式切換 UI (A/B/C)
+    - 實作模式切換時的即時重新分詞邏輯
+- [x] 驗證不同模式下的分詞變化

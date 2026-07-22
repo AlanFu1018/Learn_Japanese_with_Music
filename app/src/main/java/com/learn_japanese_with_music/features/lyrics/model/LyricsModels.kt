@@ -45,5 +45,6 @@ data class SongData(
     val title: String,
     val artist: String,
     val cover: String,
-    val lyrics: List<LyricLine>
+    val lyrics: List<LyricLine>,
+    val rawLyrics: List<String> = emptyList()
 )

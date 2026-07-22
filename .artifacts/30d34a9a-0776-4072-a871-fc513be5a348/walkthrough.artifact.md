@@ -1,25 +1,31 @@
-# Walkthrough - 新增單字卡功能 (Vocabulary Card)
+# Walkthrough - Sudachi 分詞模式切換功能
 
-本任務已成功實作單字卡功能。使用者現在可以點擊歌詞中的單字來查看詳細資訊。
+本任務已成功實作 Sudachi 分詞模式（SplitMode A, B, C）的即時切換功能。使用者現在可以根據學習需求，調整歌詞單字的拆分細緻度。
 
 ## 變更內容
 
-### 1. 新功能模組：`features/vocabulary`
-- 建立了 `features/vocabulary/ui/VocabularyCard.kt`，其中包含 `VocabularyCardContent` 組件。目前專注於清晰地顯示被點擊的單字及其讀音。
+### 1. 資料模型與 Repository 優化
+- **[LyricsModels.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/features/lyrics/model/LyricsModels.kt)**：在 `SongData` 中新增了 `rawLyrics` 欄位，保留過濾後的原始文字行。
+- **[LyricsRepository.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/features/lyrics/repository/LyricsRepository.kt)**：抓取歌詞時會同步儲存這些原始文字，以便在不重新請求網路的情況下進行本地重新分詞。
 
-### 2. 歌詞互動優化
-- 修改了 [LyricsDisplay.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/features/lyrics/ui/LyricsDisplay.kt)，為每個日文單字（`LyricSegment`）新增了 `clickable` 修飾符。
-- 實作了回呼機制，將點擊事件從 `LyricLineDisplay` 向上傳遞至主頁面。
+### 2. 分詞處理器核心更新
+- **[JapaneseProcessor.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/features/lyrics/processor/JapaneseProcessor.kt)**：`processLine` 方法現在支援傳入 `Tokenizer.SplitMode` 參數，允許呼叫端決定拆分邏輯。
 
-### 3. 單字卡彈出介面
-- 在 [LyricPage.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/features/lyrics/ui/LyricPage.kt) 中整合了 Material 3 的 `ModalBottomSheet`。
-- 使用 `selectedSegment` 狀態來追蹤目前被選中的單字，並在點擊時觸發單字卡的顯示。
+### 3. UI 介面與互動
+- **[LyricPage.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/features/lyrics/ui/LyricPage.kt)**：
+    - 在歌詞顯示區域上方新增了 **`SingleChoiceSegmentedButtonRow`**，提供 A、B、C 三種模式的切換按鈕。
+    - 使用 **`LaunchedEffect`** 監聽模式變化。一旦使用者切換模式，系統會立即使用 `JapaneseProcessor` 對 `rawLyrics` 進行重新處理，並平滑地更新 UI。
+
+## 模式說明回顧
+- **Mode A**: 拆分最細（如將「國立國會圖書館」拆為三個詞），適合精讀單字。
+- **Mode B**: 中間長度。
+- **Mode C**: 預設模式，儘量保持長單詞（如複合名詞不拆分）。
 
 ## 驗證結果
-- [x] Gradle 編譯成功。
-- [x] 點擊歌詞單字可正常觸發底部彈窗。
-- [x] 彈窗內能正確顯示該單字的漢字與讀音。
+- [x] Gradle 編譯通過。
+- [x] 成功實作 UI 切換控制項。
+- [x] 切換模式後，歌詞內容會即時重新拆分，且點擊互動依然有效。
 
 > [!TIP]
-> **未來擴充**
-> 目前單字卡僅顯示基本資訊。未來可以輕鬆地在 `VocabularyCardContent` 中加入釋義、例句或「加入單字本」的按鈕，而不需要改動歌詞顯示邏輯。
+> **學習小撇步**
+> 對於初學者，建議使用 **Mode A** 來學習構成長名詞的基礎單字；對於已經有基礎的學習者，**Mode C** 能提供更流暢的閱讀體驗。

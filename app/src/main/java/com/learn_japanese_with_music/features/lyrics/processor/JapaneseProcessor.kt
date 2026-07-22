@@ -78,14 +78,14 @@ class JapaneseProcessor private constructor() {
         }
     }
 
-    fun processLine(text: String): LyricLine {
+    fun processLine(text: String, mode: Tokenizer.SplitMode = Tokenizer.SplitMode.C): LyricLine {
         val currentTokenizer = tokenizer
         if (currentTokenizer == null) {
             Log.w(TAG, "Processor not initialized. Returning raw text.")
             return LyricLine(listOf(LyricSegment(text)))
         }
         
-        val morphemes = currentTokenizer.tokenize(text)
+        val morphemes = currentTokenizer.tokenize(mode, text)
         val segments = morphemes.map { morpheme ->
             val surface = morpheme.surface()
             val reading = morpheme.readingForm()

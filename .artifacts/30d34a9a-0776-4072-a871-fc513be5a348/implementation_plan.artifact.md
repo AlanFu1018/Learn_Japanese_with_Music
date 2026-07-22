@@ -1,32 +1,38 @@
-# 新增單字卡功能計畫 (Feature: Vocabulary Card)
+# 實作 Sudachi 分詞模式 (SplitMode) 切換功能
 
-本計畫旨在新增單字卡功能。當使用者點擊歌詞中的某個單字時，會彈出一個顯示該單字詳細資訊（目前僅顯示單字本身）的卡片。
+本計畫旨在為歌詞頁面新增一個切換按鈕，允許使用者在 Sudachi 的三種分詞模式（Mode A, B, C）之間切換，並即時更新歌詞的拆分效果。
 
 ## 建議的變更
 
-### 1. 建立新功能目錄：`features/vocabulary`
+### 1. 資料模型更新
 
-#### [NEW] [VocabularyCard.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/features/vocabulary/ui/VocabularyCard.kt)
-- 實作一個 `VocabularyCard` Composable。
-- 目前僅包含一個顯示所選單字與其讀音的 UI (可以使用 `ModalBottomSheet`)。
+#### [MODIFY] [LyricsModels.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/features/lyrics/model/LyricsModels.kt)
+- 在 `SongData` 中新增 `rawLyrics: List<String>` 欄位，用於儲存原始未處理的歌詞行，以便在切換模式時重新處理。
 
-### 2. 更新歌詞顯示邏輯以支援點擊
+### 2. 分詞處理器優化
 
-#### [MODIFY] [LyricsDisplay.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/features/lyrics/ui/LyricsDisplay.kt)
-- 在 `LyricLineDisplay` 中，為每個單字（`LyricSegment`）新增點擊事件。
-- 透過回呼（Callback）將點擊的單字傳遞給上層。
-- 在 `LyricsDisplay` 中接收此回呼並繼續向上傳遞。
+#### [MODIFY] [JapaneseProcessor.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/features/lyrics/processor/JapaneseProcessor.kt)
+- 更新 `processLine` 方法，新增 `mode: Tokenizer.SplitMode` 參數（預設為 `SplitMode.C`）。
+- 在呼叫 `currentTokenizer.tokenize(text)` 時傳入該模式。
 
-### 3. 在主頁面整合單字卡
+### 3. Repository 更新
+
+#### [MODIFY] [LyricsRepository.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/features/lyrics/repository/LyricsRepository.kt)
+- 更新 `fetchLyricsFromUrl`，在建立 `SongData` 時存入過濾後的原始歌詞行。
+
+### 4. UI 介面更新
 
 #### [MODIFY] [LyricPage.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/features/lyrics/ui/LyricPage.kt)
-- 新增狀態管理以追蹤目前被點擊的單字 (`selectedSegment`)。
-- 使用 Material 3 的 `ModalBottomSheet` 或簡單的介面切換來顯示 `VocabularyCard`。
+- 新增 `selectedMode` 狀態（預設為 `Tokenizer.SplitMode.C`）。
+- 在歌詞顯示區域上方新增一個切換控制項（如 `TabRow` 或 `SegmentedButton`）。
+- 當 `selectedMode` 改變時，使用 `JapaneseProcessor` 重新處理 `rawLyrics` 並更新顯示內容。
 
 ## 驗證計畫
 
 ### 手動驗證
-1. 進入歌詞顯示畫面。
-2. 點擊歌詞中的任意單字（例如「君」）。
-3. 確認底部彈出單字卡，並正確顯示「君」及其讀音。
-4. 點擊背景或收合按鈕，確認單字卡能正常收起。
+1. 搜尋並開啟一首歌（如「前前前世」）。
+2. 在歌詞上方切換 A、B、C 模式。
+3. 觀察「國立國會圖書館」或「前前前世」等複合詞的拆分變化：
+   - **Mode A**: 拆分最細。
+   - **Mode C**: 保持完整長單詞。
+4. 確認點擊新拆分出的單字仍能正確彈出單字卡。

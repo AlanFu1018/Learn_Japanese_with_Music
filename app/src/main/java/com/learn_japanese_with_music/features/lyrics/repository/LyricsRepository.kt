@@ -45,15 +45,18 @@ class LyricsRepository(private val japaneseProcessor: JapaneseProcessor) {
         }
 
         // 2. Process each line
-        val processedLyrics = rawLyrics.lines()
+        val filteredLines = rawLyrics.lines()
             .filter { it.isNotBlank() && !it.startsWith("[") } // 移除 [Verse], [Chorus] 等標籤
+            
+        val processedLyrics = filteredLines
             .map { japaneseProcessor.processLine(it) }
 
         SongData(
             title = title,
             artist = artist,
             lyrics = processedLyrics,
-            cover = cover
+            cover = cover,
+            rawLyrics = filteredLines
         )
     }
 }
