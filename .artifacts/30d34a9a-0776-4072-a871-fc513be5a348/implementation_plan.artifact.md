@@ -1,53 +1,32 @@
-# 程式碼架構重構與邏輯分類計畫
+# 新增單字卡功能計畫 (Feature: Vocabulary Card)
 
-本計畫旨在透過分層架構（Layered Architecture）重新組織專案結構，提升程式碼的可讀性、可維護性及擴充性。
+本計畫旨在新增單字卡功能。當使用者點擊歌詞中的某個單字時，會彈出一個顯示該單字詳細資訊（目前僅顯示單字本身）的卡片。
 
-## 重構目標
+## 建議的變更
 
-將目前的程式碼依據邏輯職責分為 **Data (資料層)**, **Domain (領域層)** 與 **UI (表示層)**。
+### 1. 建立新功能目錄：`features/vocabulary`
 
-## 預計調整後的目錄結構
+#### [NEW] [VocabularyCard.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/features/vocabulary/ui/VocabularyCard.kt)
+- 實作一個 `VocabularyCard` Composable。
+- 目前僅包含一個顯示所選單字與其讀音的 UI (可以使用 `ModalBottomSheet`)。
 
-```text
-com.learn_japanese_with_music
-├── data/                       (資料存取與網路通訊)
-│   ├── api/                    <- GeniusService.kt (包含 RetrofitClient)
-│   ├── model/                  <- API 專用資料模型 (如 GeniusResponse)
-│   └── repository/             <- LyricsRepository.kt
-├── domain/                     (核心業務邏輯與通用模型)
-│   ├── model/                  <- 核心資料模型 (SongData, LyricLine, LyricSegment)
-│   └── processor/              <- JapaneseProcessor.kt (分詞處理邏輯)
-├── ui/                         (使用者介面與元件)
-│   ├── lyrics/                 <- 歌詞顯示相關 UI (LyricsDisplay)
-│   ├── search/                 <- 搜尋頁面 UI (LyricPage)
-│   ├── components/             <- 通用自定義元件 (HomeButton)
-│   └── theme/                  <- 樣式、顏色與字型設定
-└── MainActivity.kt             (應用程式進入點)
-```
+### 2. 更新歌詞顯示邏輯以支援點擊
 
-## 建議的變更內容
+#### [MODIFY] [LyricsDisplay.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/features/lyrics/ui/LyricsDisplay.kt)
+- 在 `LyricLineDisplay` 中，為每個單字（`LyricSegment`）新增點擊事件。
+- 透過回呼（Callback）將點擊的單字傳遞給上層。
+- 在 `LyricsDisplay` 中接收此回呼並繼續向上傳遞。
 
-### 1. 模型遷移與合併
-- 將分散在各檔案的 `data class` 依照職責重新歸類。
-- 例如：`SongData`, `LyricLine`, `LyricSegment` 搬移至 `domain.model`。
+### 3. 在主頁面整合單字卡
 
-### 2. 功能元件歸類
-- `GeniusService` 與其相關網路設定遷移至 `data.api`。
-- `JapaneseProcessor` 遷移至 `domain.processor`。
-- `LyricsRepository` 遷移至 `data.repository`。
-
-### 3. UI 元件組織
-- 將 `Lyrics_ui.kt` 內容重命名或遷移至 `ui.lyrics`。
-- 將 `LyricPage.kt` 遷移至 `ui.search`。
-
-### 4. 全域 Import 更新
-- 修改所有受影響檔案的 `package` 宣告與 `import` 路徑。
+#### [MODIFY] [LyricPage.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/features/lyrics/ui/LyricPage.kt)
+- 新增狀態管理以追蹤目前被點擊的單字 (`selectedSegment`)。
+- 使用 Material 3 的 `ModalBottomSheet` 或簡單的介面切換來顯示 `VocabularyCard`。
 
 ## 驗證計畫
 
-### 自動化測試
-- 執行 `gradle_build("app:assembleDebug")` 確保重構後專案仍能正確編譯。
-
 ### 手動驗證
-- 啟動 App，確認搜尋與歌詞顯示功能與重構前一致。
-- 檢查專案目錄結構是否符合計畫。
+1. 進入歌詞顯示畫面。
+2. 點擊歌詞中的任意單字（例如「君」）。
+3. 確認底部彈出單字卡，並正確顯示「君」及其讀音。
+4. 點擊背景或收合按鈕，確認單字卡能正常收起。

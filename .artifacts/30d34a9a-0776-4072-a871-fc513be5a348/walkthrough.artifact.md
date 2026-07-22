@@ -1,38 +1,25 @@
-# Walkthrough - 程式碼架構重構 (Feature-oriented)
+# Walkthrough - 新增單字卡功能 (Vocabulary Card)
 
-本任務已完成將專案結構從簡單的目錄排列重構為以 **Feature (功能相關性)** 為核心的架構。
+本任務已成功實作單字卡功能。使用者現在可以點擊歌詞中的單字來查看詳細資訊。
 
-## 重構後的目錄結構
+## 變更內容
 
-```text
-com.learn_japanese_with_music
-├── core/                       (跨功能通用的核心元件)
-│   ├── network/                <- RetrofitClient (通用的連線設定)
-│   ├── theme/                  <- appTheme, Color, Type
-│   └── components/             <- 通用的 UI 組件 (如 HomeRectangleButton)
-├── features/                   (獨立的功能模組)
-│   └── lyrics/                 (歌詞功能模組)
-│       ├── api/                <- GeniusService
-│       ├── repository/         <- LyricsRepository
-│       ├── processor/          <- JapaneseProcessor
-│       ├── model/              <- LyricsModels.kt (包含 SongData, GeniusSong 等)
-│       └── ui/                 <- LyricPage.kt, LyricsDisplay.kt
-└── MainActivity.kt             (導航與進入點)
-```
+### 1. 新功能模組：`features/vocabulary`
+- 建立了 `features/vocabulary/ui/VocabularyCard.kt`，其中包含 `VocabularyCardContent` 組件。目前專注於清晰地顯示被點擊的單字及其讀音。
 
-## 變更細節
+### 2. 歌詞互動優化
+- 修改了 [LyricsDisplay.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/features/lyrics/ui/LyricsDisplay.kt)，為每個日文單字（`LyricSegment`）新增了 `clickable` 修飾符。
+- 實作了回呼機制，將點擊事件從 `LyricLineDisplay` 向上傳遞至主頁面。
 
-### 1. 職責分離與封裝
-- **`RetrofitClient`**：從 `GeniusService.kt` 中抽離，歸類到 `core/network` 下，方便未來其他功能模組共用連線邏輯。
-- **資料模型統一**：將原本分散的歌詞相關資料模型統一整理至 `features/lyrics/model/LyricsModels.kt`，提升了資料結構的透明度。
-- **UI 元件重命名**：將 `Lyrics_ui.kt` 重新命名為 `LyricsDisplay.kt`，更符合其 Composable 函數的名稱與職責。
+### 3. 單字卡彈出介面
+- 在 [LyricPage.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/features/lyrics/ui/LyricPage.kt) 中整合了 Material 3 的 `ModalBottomSheet`。
+- 使用 `selectedSegment` 狀態來追蹤目前被選中的單字，並在點擊時觸發單字卡的顯示。
 
-### 2. 目錄整潔度提升
-- 移除了原有的 `lyrics_display/`、`ui/pages/`、`ui/components/` 與 `ui/theme/` 目錄，改以更具邏輯性的 `core/` 與 `features/` 結構呈現。
+## 驗證結果
+- [x] Gradle 編譯成功。
+- [x] 點擊歌詞單字可正常觸發底部彈窗。
+- [x] 彈窗內能正確顯示該單字的漢字與讀音。
 
-### 3. 穩定性驗證
-- 全域更新了所有受影響檔案的 `package` 宣告與 `import` 語句。
-- 已通過 Gradle 編譯測試 (`app:assembleDebug`)，確認專案功能完好。
-
-## 後續維護建議
-- 若未來新增功能（例如：使用者播放清單），請在 `features/` 下建立新的目錄（如 `features/playlists/`），遵循相同的 `api`, `repository`, `model`, `ui` 結構。
+> [!TIP]
+> **未來擴充**
+> 目前單字卡僅顯示基本資訊。未來可以輕鬆地在 `VocabularyCardContent` 中加入釋義、例句或「加入單字本」的按鈕，而不需要改動歌詞顯示邏輯。

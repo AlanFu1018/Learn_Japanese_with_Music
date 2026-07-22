@@ -37,6 +37,7 @@ import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
@@ -45,6 +46,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -66,11 +68,13 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.learn_japanese_with_music.core.components.HomeRectangleButton
 import com.learn_japanese_with_music.features.lyrics.model.GeniusSong
+import com.learn_japanese_with_music.features.lyrics.model.LyricSegment
 import com.learn_japanese_with_music.features.lyrics.model.SongData
 import com.learn_japanese_with_music.features.lyrics.repository.LyricsRepository
+import com.learn_japanese_with_music.features.vocabulary.ui.VocabularyCardContent
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class, androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun LyricPage(repository: LyricsRepository) {
     var query by remember { mutableStateOf("前前前世") }
@@ -82,6 +86,11 @@ fun LyricPage(repository: LyricsRepository) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val focusManager = LocalFocusManager.current
     val isImeVisible = WindowInsets.isImeVisible
+
+    // 單字卡相關狀態
+    var selectedSegment by remember { mutableStateOf<LyricSegment?>(null) }
+    val sheetState = rememberModalBottomSheetState()
+    var showBottomSheet by remember { mutableStateOf(false) }
 
     // 當鍵盤收合時，主動清除焦點以隱藏游標
     LaunchedEffect(isImeVisible) {
@@ -221,7 +230,14 @@ fun LyricPage(repository: LyricsRepository) {
                     BackHandler {
                         lyrics = null
                     }
-                    LyricsDisplay(songData = lyrics!!, modifier = Modifier.weight(1f))
+                    LyricsDisplay(
+                        songData = lyrics!!,
+                        modifier = Modifier.weight(1f),
+                        onSegmentClick = { segment ->
+                            selectedSegment = segment
+                            showBottomSheet = true
+                        }
+                    )
 
                 } else if (searchResults.isNotEmpty()) {
                     LazyVerticalGrid(
@@ -249,6 +265,16 @@ fun LyricPage(repository: LyricsRepository) {
                     }
                 } else if (!isLoading && errorMessage == null) {
                     Text(text = "Search for a song to see lyrics", style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+
+            // 單字卡 BottomSheet
+            if (showBottomSheet && selectedSegment != null) {
+                ModalBottomSheet(
+                    onDismissRequest = { showBottomSheet = false },
+                    sheetState = sheetState
+                ) {
+                    VocabularyCardContent(segment = selectedSegment!!)
                 }
             }
         }

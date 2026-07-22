@@ -1,5 +1,6 @@
 package com.learn_japanese_with_music.features.lyrics.ui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -31,6 +32,7 @@ import com.learn_japanese_with_music.features.lyrics.model.SongData
 @Composable
 fun LyricLineDisplay(
     line: LyricLine,
+    onSegmentClick: (LyricSegment) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column {
@@ -43,7 +45,9 @@ fun LyricLineDisplay(
             line.segments.forEach { segment ->
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.padding(horizontal = 2.dp)
+                    modifier = Modifier
+                        .padding(horizontal = 2.dp)
+                        .clickable { onSegmentClick(segment) }
                 ) {
                     // 主要日文文字
                     Text(
@@ -70,6 +74,7 @@ fun LyricLineDisplay(
 @Composable
 fun LyricsDisplay(
     songData: SongData,
+    onSegmentClick: (LyricSegment) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -98,7 +103,10 @@ fun LyricsDisplay(
             }
 
             items(songData.lyrics) { line ->
-                LyricLineDisplay(line = line)
+                LyricLineDisplay(
+                    line = line,
+                    onSegmentClick = onSegmentClick
+                )
             }
         }
     }
@@ -141,7 +149,10 @@ fun LyricPreview() {
 
     appTheme {
         Column() {
-            LyricsDisplay(songData = sampleSongData)
+            LyricsDisplay(
+                songData = sampleSongData,
+                onSegmentClick = {}
+            )
         }
     }
 }

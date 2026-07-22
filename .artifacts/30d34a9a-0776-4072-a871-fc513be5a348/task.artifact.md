@@ -1,7 +1,4 @@
-- [x] 建立新的目錄結構 (`core/`, `features/lyrics/`)
-- [x] 搬移並拆分 `GeniusService.kt` (將 `RetrofitClient` 移至 `core/network`)
-- [x] 搬移並整理 `lyrics_display` 目錄下的檔案至 `features/lyrics`
-- [x] 搬移 `ui/theme` 與 `ui/components` 至 `core`
-- [x] 遷移 `LyricPage.kt` 至 `features/lyrics/ui`
-- [x] 全域更新 package 宣告與 import 路徑
-- [x] 驗證 Gradle 編譯
+- [x] 建立 `features/vocabulary/ui/VocabularyCard.kt`
+- [x] 修改 `LyricsDisplay.kt`：為 `LyricSegment` 增加點擊事件與回傳機制
+- [x] 修改 `LyricPage.kt`：整合 `ModalBottomSheet` 顯示單字卡
+- [x] 驗證功能：點擊單字後能彈出卡片顯示正確內容
