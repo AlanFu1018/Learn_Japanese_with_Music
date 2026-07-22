@@ -47,7 +47,10 @@ fun LyricLineDisplay(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
                         .padding(horizontal = 2.dp)
-                        .clickable { onSegmentClick(segment) }
+                        .clickable(
+                            enabled = segment.text.any { it.isLetterOrDigit() },
+                            onClick = { onSegmentClick(segment) }
+                        )
                 ) {
                     // 主要日文文字
                     Text(

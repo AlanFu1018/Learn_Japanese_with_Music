@@ -1,7 +1,4 @@
-- [x] 建立 `SettingsManager` 用於持久化設定
-- [x] 重構 `MainActivity` 提升側邊欄層級
-- [x] 建立 `SettingsPage` 介面
-- [x] 修改 `LyricPage` 移除內建側邊欄並支援外部分導航
-- [x] 更新 `RetrofitClient` 以動態讀取 API Token
-- [x] 串接 `JapaneseProcessor` 使用持久化的分詞模式
-- [x] 驗證導航與設定儲存功能
+- [x] 修正 `LyricPage.kt`：點擊 Menu 時清除焦點並收起鍵盤
+- [x] 修正 `SettingsPage.kt`：點擊 Menu 時清除焦點並收起鍵盤
+- [x] 修正 `LyricsDisplay.kt`：限制空白字元不可點擊
+- [x] 驗證 UI 互動與點擊行為

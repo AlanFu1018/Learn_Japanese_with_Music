@@ -68,6 +68,7 @@ import com.learn_japanese_with_music.features.lyrics.model.SongData
 import com.learn_japanese_with_music.features.lyrics.processor.JapaneseProcessor
 import com.learn_japanese_with_music.features.lyrics.repository.LyricsRepository
 import com.learn_japanese_with_music.features.vocabulary.ui.VocabularyCardContent
+import com.worksap.nlp.sudachi.Tokenizer
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalLayoutApi::class, androidx.compose.material3.ExperimentalMaterial3Api::class)
@@ -75,6 +76,7 @@ import kotlinx.coroutines.launch
 fun LyricPage(
     repository: LyricsRepository,
     settingsManager: SettingsManager,
+    selectedMode: Tokenizer.SplitMode,
     onMenuClick: () -> Unit
 ) {
     var query by remember { mutableStateOf("前前前世") }
@@ -92,7 +94,6 @@ fun LyricPage(
     var showBottomSheet by remember { mutableStateOf(false) }
 
     val japaneseProcessor = JapaneseProcessor.getInstance()
-    val selectedMode = settingsManager.sudachiSplitMode
 
     // 當 Settings 中的模式改變時，即時更新目前的歌詞顯示
     LaunchedEffect(selectedMode) {
@@ -148,7 +149,10 @@ fun LyricPage(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Box(modifier = Modifier.padding(end = 8.dp)){
-                        HomeRectangleButton(onClick = onMenuClick)
+                        HomeRectangleButton(onClick = {
+                            focusManager.clearFocus()
+                            onMenuClick()
+                        })
                     }
 
                     OutlinedTextField(

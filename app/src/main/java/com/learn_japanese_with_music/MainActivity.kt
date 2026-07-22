@@ -63,6 +63,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             appTheme {
                 var currentScreen by remember { mutableStateOf(Screen.Search) }
+                var selectedSudachiMode by remember { mutableStateOf(settingsManager.sudachiSplitMode) }
+                
                 val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
                 val scope = rememberCoroutineScope()
 
@@ -71,11 +73,13 @@ class MainActivity : ComponentActivity() {
                     drawerContent = {
                         ModalDrawerSheet {
                             Column(
-                                modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 16.dp),
+                                modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 18.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Text("Learn Japanese with Song",
-                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold))
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold),
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
 
                                 Spacer(modifier = Modifier.height(16.dp))
                                 
@@ -107,12 +111,18 @@ class MainActivity : ComponentActivity() {
                             LyricPage(
                                 repository = repository,
                                 settingsManager = settingsManager,
+                                selectedMode = selectedSudachiMode,
                                 onMenuClick = { scope.launch { drawerState.open() } }
                             )
                         }
                         Screen.Settings -> {
                             SettingsPage(
                                 settingsManager = settingsManager,
+                                currentMode = selectedSudachiMode,
+                                onModeChange = { newMode -> 
+                                    selectedSudachiMode = newMode
+                                    settingsManager.sudachiSplitMode = newMode
+                                },
                                 onMenuClick = { scope.launch { drawerState.open() } }
                             )
                         }

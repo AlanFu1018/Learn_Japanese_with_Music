@@ -5,6 +5,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.learn_japanese_with_music.core.components.HomeRectangleButton
@@ -14,11 +15,14 @@ import com.worksap.nlp.sudachi.Tokenizer
 @Composable
 fun SettingsPage(
     settingsManager: SettingsManager,
+    currentMode: Tokenizer.SplitMode,
+    onModeChange: (Tokenizer.SplitMode) -> Unit,
     onMenuClick: () -> Unit
 ) {
     var geniusToken by remember { mutableStateOf(settingsManager.geniusApiToken) }
-    var selectedMode by remember { mutableStateOf(settingsManager.sudachiSplitMode) }
     val modes = listOf(Tokenizer.SplitMode.A, Tokenizer.SplitMode.B, Tokenizer.SplitMode.C)
+    val focusManager = LocalFocusManager.current
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
@@ -32,7 +36,10 @@ fun SettingsPage(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                HomeRectangleButton(onClick = onMenuClick)
+                HomeRectangleButton(onClick = {
+                    focusManager.clearFocus()
+                    onMenuClick()
+                })
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(
                     text = "Settings",
@@ -82,12 +89,11 @@ fun SettingsPage(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     RadioButton(
-                        selected = selectedMode == mode,
-                        onClick = {
-                            selectedMode = mode
-                            settingsManager.sudachiSplitMode = mode
-                        }
-                    )
+                    selected = currentMode == mode,
+                    onClick = {
+                        onModeChange(mode)
+                    }
+                )
 
                     if(mode.name.equals("A")){
                         Column() {
