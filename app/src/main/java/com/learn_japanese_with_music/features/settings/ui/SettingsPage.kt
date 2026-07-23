@@ -136,16 +136,6 @@ fun SettingsPage(
                             )
                         }
                     }
-
-//
-//                    Text(
-//                        text = if(mode.name.equals("A")) "A Mode (cut lyrics into the smallest unit as possible)"
-//                        else if(mode.name.equals("B")) "B Mode (between A, C Mode)"
-//                        else "C Mode (cut lyrics into the biggest unit)",
-//                        modifier = Modifier.padding(start = 8.dp),
-//                        style = MaterialTheme.typography.bodySmall,
-//                        color = MaterialTheme.colorScheme.onBackground
-//                    )
                 }
             }
         }

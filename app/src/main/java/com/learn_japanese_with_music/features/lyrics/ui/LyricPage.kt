@@ -96,16 +96,16 @@ fun LyricPage(
     val japaneseProcessor = JapaneseProcessor.getInstance()
 
     // 當 Settings 中的模式改變時，即時更新目前的歌詞顯示
-    LaunchedEffect(currentMode) {
-        lyrics?.let { currentLyrics ->
-            if (currentLyrics.rawLyrics.isNotEmpty()) {
-                val newProcessedLyrics = currentLyrics.rawLyrics.map { line ->
-                    japaneseProcessor.processLine(line, settingsManager.sudachiSplitMode)
-                }
-                lyrics = currentLyrics.copy(lyrics = newProcessedLyrics)
-            }
-        }
-    }
+//    LaunchedEffect(currentMode) {
+//        lyrics?.let { currentLyrics ->
+//            if (currentLyrics.rawLyrics.isNotEmpty()) {
+//                val newProcessedLyrics = currentLyrics.rawLyrics.map { line ->
+//                    japaneseProcessor.processLine(line, settingsManager.sudachiSplitMode)
+//                }
+//                lyrics = currentLyrics.copy(lyrics = newProcessedLyrics)
+//            }
+//        }
+//    }
 
     // 當鍵盤收合時，主動清除焦點以隱藏游標
     LaunchedEffect(isImeVisible) {
