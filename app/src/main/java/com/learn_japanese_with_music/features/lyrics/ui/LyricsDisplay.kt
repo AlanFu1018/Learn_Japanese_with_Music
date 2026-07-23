@@ -32,9 +32,11 @@ import com.learn_japanese_with_music.features.lyrics.model.SongData
 @Composable
 fun LyricLineDisplay(
     line: LyricLine,
-    onSegmentClick: (LyricSegment) -> Unit,
+    onSegmentClick: (LyricSegment, String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val fullLineText = line.segments.joinToString("") { it.text }
+    
     Column {
         FlowRow(
             modifier = modifier
@@ -49,7 +51,7 @@ fun LyricLineDisplay(
                         .padding(horizontal = 2.dp)
                         .clickable(
                             enabled = segment.text.any { it.isLetterOrDigit() },
-                            onClick = { onSegmentClick(segment) }
+                            onClick = { onSegmentClick(segment, fullLineText) }
                         )
                 ) {
                     // 主要日文文字
@@ -77,7 +79,7 @@ fun LyricLineDisplay(
 @Composable
 fun LyricsDisplay(
     songData: SongData,
-    onSegmentClick: (LyricSegment) -> Unit,
+    onSegmentClick: (LyricSegment, String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -154,7 +156,7 @@ fun LyricPreview() {
         Column() {
             LyricsDisplay(
                 songData = sampleSongData,
-                onSegmentClick = {}
+                onSegmentClick = { _, _ -> }
             )
         }
     }

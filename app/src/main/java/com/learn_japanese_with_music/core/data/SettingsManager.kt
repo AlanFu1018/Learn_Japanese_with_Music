@@ -10,12 +10,22 @@ class SettingsManager(context: Context) {
 
     companion object {
         private const val KEY_GENIUS_TOKEN = "genius_api_token"
+        private const val KEY_GEMINI_KEY = "gemini_api_key"
+        private const val KEY_GEMINI_MODEL = "gemini_model_name"
         private const val KEY_SUDACHI_MODE = "sudachi_split_mode"
     }
 
     var geniusApiToken: String
-        get() = prefs.getString(KEY_GENIUS_TOKEN, BuildConfig.GENIUS_API_TOKEN) ?: "No Token has been provided recently"
+        get() = prefs.getString(KEY_GENIUS_TOKEN, BuildConfig.GENIUS_API_TOKEN) ?: ""
         set(value) = prefs.edit().putString(KEY_GENIUS_TOKEN, value).apply()
+
+    var geminiApiKey: String
+        get() = prefs.getString(KEY_GEMINI_KEY, BuildConfig.GEMINI_API_TOKEN) ?: ""
+        set(value) = prefs.edit().putString(KEY_GEMINI_KEY, value).apply()
+
+    var geminiModel: String
+        get() = prefs.getString(KEY_GEMINI_MODEL, "gemini-3.1-flash-lite") ?: "gemini-3.1-flash-lite"
+        set(value) = prefs.edit().putString(KEY_GEMINI_MODEL, value).apply()
 
     var sudachiSplitMode: Tokenizer.SplitMode
         get() {

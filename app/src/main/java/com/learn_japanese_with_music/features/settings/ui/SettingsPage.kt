@@ -20,6 +20,8 @@ fun SettingsPage(
     onMenuClick: () -> Unit
 ) {
     var geniusToken by remember { mutableStateOf(settingsManager.geniusApiToken) }
+    var geminiKey by remember { mutableStateOf(settingsManager.geminiApiKey) }
+    var geminiModel by remember { mutableStateOf(settingsManager.geminiModel) }
     val modes = listOf(Tokenizer.SplitMode.A, Tokenizer.SplitMode.B, Tokenizer.SplitMode.C)
     val focusManager = LocalFocusManager.current
 
@@ -67,6 +69,50 @@ fun SettingsPage(
                 },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text("Enter your Genius API token", style = MaterialTheme.typography.labelMedium) },
+                singleLine = true,
+                textStyle = MaterialTheme.typography.bodySmall
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Gemini API Key Section
+            Text(
+                text = "Gemini API Key (for analysis)",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(
+                value = geminiKey,
+                onValueChange = {
+                    geminiKey = it
+                    settingsManager.geminiApiKey = it
+                },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("Enter your Gemini API key", style = MaterialTheme.typography.labelMedium) },
+                singleLine = true,
+                textStyle = MaterialTheme.typography.bodySmall
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Gemini Model Section
+            Text(
+                text = "Gemini Model Name",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(
+                value = geminiModel,
+                onValueChange = {
+                    geminiModel = it
+                    settingsManager.geminiModel = it
+                },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("e.g., gemini-1.5-pro", style = MaterialTheme.typography.labelMedium) },
                 singleLine = true,
                 textStyle = MaterialTheme.typography.bodySmall
             )

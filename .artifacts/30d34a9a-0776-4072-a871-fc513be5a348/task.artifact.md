@@ -1,4 +1,9 @@
-- [x] 修正 `LyricPage.kt`：點擊 Menu 時清除焦點並收起鍵盤
-- [x] 修正 `SettingsPage.kt`：點擊 Menu 時清除焦點並收起鍵盤
-- [x] 修正 `LyricsDisplay.kt`：限制空白字元不可點擊
-- [x] 驗證 UI 互動與點擊行為
+- [ ] 更新 `LyricsModels.kt` (新增 `partOfSpeech` 欄位至 `LyricSegment`)
+- [ ] 更新 `WordAnalysis.kt` (新增 `UsageExample` 並修改 `WordAnalysis` 結構)
+- [ ] 修改 `JapaneseProcessor.kt` (提取並傳遞詞性資訊)
+- [ ] 更新 `SettingsManager.kt` (新增 `geminiModel` 屬性，預設 `gemini-3.1-flash-lite`)
+- [ ] 更新 `SettingsPage.kt` (新增 Gemini Model 名稱輸入框)
+- [ ] 最佳化 `GeminiAnalyzer.kt` (更新 Prompt 並支援動態模型)
+- [ ] 更新 `WordCache.kt` (同步模型變動，儲存 JSON 化的例句)
+- [ ] 更新 `VocabularyCard.kt` (顯示 Sudachi 詞性與結構化例句)
+- [ ] 驗證 JSON 解析錯誤已修正

@@ -4,6 +4,7 @@ import java.io.FileInputStream
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
 }
 
 val localProperties = Properties()
@@ -31,6 +32,8 @@ android {
 
         val geniusToken = localProperties.getProperty("GENIUS_API_TOKEN") ?: ""
         buildConfigField("String", "GENIUS_API_TOKEN", "\"$geniusToken\"")
+        val geminiToken = localProperties.getProperty("GEMINI_API_TOKEN") ?: ""
+        buildConfigField("String", "GEMINI_API_TOKEN", "\"$geminiToken\"")
     }
 
     buildTypes {
@@ -76,6 +79,10 @@ dependencies {
     implementation(libs.retrofit.gson)
     implementation(libs.jsoup)
     implementation(libs.sudachi)
+    implementation(libs.generativeai)
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

@@ -34,7 +34,8 @@ data class GeniusArtist(
 
 data class LyricSegment(
     val text: String,
-    val reading: String = ""
+    val reading: String = "",
+    val partOfSpeech: List<String> = emptyList()
 )
 
 data class LyricLine(

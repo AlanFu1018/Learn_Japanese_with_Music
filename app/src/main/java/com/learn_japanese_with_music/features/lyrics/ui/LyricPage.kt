@@ -90,22 +90,23 @@ fun LyricPage(
 
     // 單字卡相關狀態
     var selectedSegment by remember { mutableStateOf<LyricSegment?>(null) }
+    var selectedContextLine by remember { mutableStateOf("") }
     val sheetState = rememberModalBottomSheetState()
     var showBottomSheet by remember { mutableStateOf(false) }
 
     val japaneseProcessor = JapaneseProcessor.getInstance()
 
     // 當 Settings 中的模式改變時，即時更新目前的歌詞顯示
-//    LaunchedEffect(currentMode) {
-//        lyrics?.let { currentLyrics ->
-//            if (currentLyrics.rawLyrics.isNotEmpty()) {
-//                val newProcessedLyrics = currentLyrics.rawLyrics.map { line ->
-//                    japaneseProcessor.processLine(line, settingsManager.sudachiSplitMode)
-//                }
-//                lyrics = currentLyrics.copy(lyrics = newProcessedLyrics)
-//            }
-//        }
-//    }
+    LaunchedEffect(currentMode) {
+        lyrics?.let { currentLyrics ->
+            if (currentLyrics.rawLyrics.isNotEmpty()) {
+                val newProcessedLyrics = currentLyrics.rawLyrics.map { line ->
+                    japaneseProcessor.processLine(line, currentMode)
+                }
+                lyrics = currentLyrics.copy(lyrics = newProcessedLyrics)
+            }
+        }
+    }
 
     // 當鍵盤收合時，主動清除焦點以隱藏游標
     LaunchedEffect(isImeVisible) {
@@ -207,7 +208,13 @@ fun LyricPage(
             }
 
             errorMessage?.let {
-                Text(text = "Error: $it", color = MaterialTheme.colorScheme.error)
+                if(settingsManager.geniusApiToken.isBlank())
+                    Text(text = "Please enter your Genius API Access Token in the Settings",
+                        color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                else
+                    Text(text = "Error: $it", color = MaterialTheme.colorScheme.error)
             }
 
             if (lyrics != null) {
@@ -219,8 +226,9 @@ fun LyricPage(
                 LyricsDisplay(
                     songData = lyrics!!,
                     modifier = Modifier.weight(1f),
-                    onSegmentClick = { segment ->
+                    onSegmentClick = { segment, contextLine ->
                         selectedSegment = segment
+                        selectedContextLine = contextLine
                         showBottomSheet = true
                     }
                 )
@@ -251,7 +259,7 @@ fun LyricPage(
                     }
                 }
             } else if (!isLoading && errorMessage == null) {
-                Text(text = "Search for a song to see lyrics", style = MaterialTheme.typography.bodyMedium)
+                Text(text = "Search for a song to see lyrics", style = MaterialTheme.typography.labelMedium)
             }
         }
 
@@ -261,7 +269,12 @@ fun LyricPage(
                 onDismissRequest = { showBottomSheet = false },
                 sheetState = sheetState
             ) {
-                VocabularyCardContent(segment = selectedSegment!!)
+                VocabularyCardContent(
+                    segment = selectedSegment!!,
+                    contextLine = selectedContextLine,
+                    settingsManager = settingsManager,
+                    splitMode = currentMode.name
+                )
             }
         }
     }
