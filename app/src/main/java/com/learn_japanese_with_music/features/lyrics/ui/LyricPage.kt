@@ -76,7 +76,7 @@ import kotlinx.coroutines.launch
 fun LyricPage(
     repository: LyricsRepository,
     settingsManager: SettingsManager,
-    selectedMode: Tokenizer.SplitMode,
+    currentMode: Tokenizer.SplitMode,
     onMenuClick: () -> Unit
 ) {
     var query by remember { mutableStateOf("前前前世") }
@@ -96,11 +96,11 @@ fun LyricPage(
     val japaneseProcessor = JapaneseProcessor.getInstance()
 
     // 當 Settings 中的模式改變時，即時更新目前的歌詞顯示
-    LaunchedEffect(selectedMode) {
+    LaunchedEffect(currentMode) {
         lyrics?.let { currentLyrics ->
             if (currentLyrics.rawLyrics.isNotEmpty()) {
                 val newProcessedLyrics = currentLyrics.rawLyrics.map { line ->
-                    japaneseProcessor.processLine(line, selectedMode)
+                    japaneseProcessor.processLine(line, settingsManager.sudachiSplitMode)
                 }
                 lyrics = currentLyrics.copy(lyrics = newProcessedLyrics)
             }

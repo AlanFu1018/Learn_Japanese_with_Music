@@ -81,6 +81,7 @@ fun SettingsPage(
                 color = MaterialTheme.colorScheme.onBackground
             )
             Spacer(modifier = Modifier.height(6.dp))
+
             modes.forEach { mode ->
                 Row(
                     modifier = Modifier
@@ -89,11 +90,11 @@ fun SettingsPage(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     RadioButton(
-                    selected = currentMode == mode,
-                    onClick = {
-                        onModeChange(mode)
-                    }
-                )
+                        selected = currentMode == mode,
+                        onClick = {
+                            onModeChange(mode)
+                        }
+                    )
 
                     if(mode.name.equals("A")){
                         Column() {

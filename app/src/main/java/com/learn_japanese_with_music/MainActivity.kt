@@ -43,8 +43,8 @@ enum class Screen { Search, Settings }
 
 class MainActivity : ComponentActivity() {
     private val japaneseProcessor = JapaneseProcessor.getInstance()
-    private val repository = LyricsRepository(japaneseProcessor)
     private lateinit var settingsManager: SettingsManager
+    private lateinit var repository: LyricsRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -108,10 +108,11 @@ class MainActivity : ComponentActivity() {
                 ) {
                     when (currentScreen) {
                         Screen.Search -> {
+                            repository = LyricsRepository(japaneseProcessor, settingsManager)
                             LyricPage(
                                 repository = repository,
                                 settingsManager = settingsManager,
-                                selectedMode = selectedSudachiMode,
+                                currentMode = selectedSudachiMode,
                                 onMenuClick = { scope.launch { drawerState.open() } }
                             )
                         }

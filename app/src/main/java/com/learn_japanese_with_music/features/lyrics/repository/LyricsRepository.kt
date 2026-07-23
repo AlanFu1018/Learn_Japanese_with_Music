@@ -1,5 +1,6 @@
 package com.learn_japanese_with_music.features.lyrics.repository
 
+import com.learn_japanese_with_music.core.data.SettingsManager
 import com.learn_japanese_with_music.core.network.RetrofitClient
 import com.learn_japanese_with_music.features.lyrics.model.GeniusSong
 import com.learn_japanese_with_music.features.lyrics.model.SongData
@@ -8,7 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
 
-class LyricsRepository(private val japaneseProcessor: JapaneseProcessor) {
+class LyricsRepository(private val japaneseProcessor: JapaneseProcessor, private var settingsManager: SettingsManager) {
 
     /**
      * 搜尋歌曲列表
@@ -49,7 +50,7 @@ class LyricsRepository(private val japaneseProcessor: JapaneseProcessor) {
             .filter { it.isNotBlank() && !it.startsWith("[") } // 移除 [Verse], [Chorus] 等標籤
             
         val processedLyrics = filteredLines
-            .map { japaneseProcessor.processLine(it) }
+            .map { japaneseProcessor.processLine(it, settingsManager.sudachiSplitMode) }
 
         SongData(
             title = title,
