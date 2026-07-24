@@ -61,6 +61,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.learn_japanese_with_music.core.components.HomeRectangleButton
+import com.learn_japanese_with_music.core.components.SearchBar
 import com.learn_japanese_with_music.core.data.SettingsManager
 import com.learn_japanese_with_music.features.lyrics.model.GeniusSong
 import com.learn_japanese_with_music.features.lyrics.model.LyricSegment
@@ -156,48 +157,54 @@ fun LyricPage(
                         })
                     }
 
-                    OutlinedTextField(
-                        value = query,
-                        onValueChange = { query = it },
-                        placeholder = {
-                            Text("Search",
-                            color = MaterialTheme.colorScheme.primaryContainer
-                            )
-                        },
-                        modifier = Modifier.weight(1f),
-                        shape = CircleShape,
-                        textStyle = MaterialTheme.typography.bodyMedium.copy(
-                            color = MaterialTheme.colorScheme.primaryContainer
-                        ),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = MaterialTheme.colorScheme.primaryContainer,
-                            unfocusedTextColor = MaterialTheme.colorScheme.primaryContainer,
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White,
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outline
-                        ),
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                        keyboardActions = KeyboardActions(
-                            onSearch = { performSearch() }
-                        ),
-                        trailingIcon = {
-                            FilledIconButton (
-                                onClick = { performSearch() },
-                                colors = IconButtonDefaults.filledIconButtonColors(
-                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                                ),
-                                modifier = Modifier.size(55.dp).offset(x = -5.dp),
-                                shape = CircleShape
-                            ) {
-                                Icon(Icons.Default.Search,
-                                    contentDescription = "Search",
-                                    modifier = Modifier.size(30.dp)
-                                )
-                            }
-                        },
+                    SearchBar(
+                        query = query,
+                        onQueryChange = { query = it },
+                        performSearch = { performSearch() }
                     )
+
+//                    OutlinedTextField(
+//                        value = query,
+//                        onValueChange = { query = it },
+//                        placeholder = {
+//                            Text("Search",
+//                            color = MaterialTheme.colorScheme.primaryContainer
+//                            )
+//                        },
+//                        modifier = Modifier.weight(1f),
+//                        shape = CircleShape,
+//                        textStyle = MaterialTheme.typography.bodyMedium.copy(
+//                            color = MaterialTheme.colorScheme.primaryContainer
+//                        ),
+//                        colors = OutlinedTextFieldDefaults.colors(
+//                            focusedTextColor = MaterialTheme.colorScheme.primaryContainer,
+//                            unfocusedTextColor = MaterialTheme.colorScheme.primaryContainer,
+//                            focusedContainerColor = Color.White,
+//                            unfocusedContainerColor = Color.White,
+//                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+//                            unfocusedBorderColor = MaterialTheme.colorScheme.outline
+//                        ),
+//                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+//                        keyboardActions = KeyboardActions(
+//                            onSearch = { performSearch() }
+//                        ),
+//                        trailingIcon = {
+//                            FilledIconButton (
+//                                onClick = { performSearch() },
+//                                colors = IconButtonDefaults.filledIconButtonColors(
+//                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+//                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+//                                ),
+//                                modifier = Modifier.size(55.dp).offset(x = -5.dp),
+//                                shape = CircleShape
+//                            ) {
+//                                Icon(Icons.Default.Search,
+//                                    contentDescription = "Search",
+//                                    modifier = Modifier.size(30.dp)
+//                                )
+//                            }
+//                        },
+//                    )
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))

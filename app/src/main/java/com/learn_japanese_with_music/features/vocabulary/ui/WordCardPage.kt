@@ -3,6 +3,7 @@ package com.learn_japanese_with_music.features.vocabulary.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -11,6 +12,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ArrowForwardIos
+import androidx.compose.material.icons.filled.ArrowRight
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -54,6 +59,7 @@ fun WordCardPage(
     
     // For nested navigation (e.g., viewing words of a specific song)
     var selectedCategoryValue by remember { mutableStateOf<String?>(null) }
+    var isMenuExpanded by remember { mutableStateOf(false) }
     
     // Word detail dialog state
     var selectedWordForDetail by remember { mutableStateOf<SavedWord?>(null) }
@@ -106,21 +112,61 @@ fun WordCardPage(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Category Selector
-            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                WordCategoryMode.values().forEachIndexed { index, mode ->
-                    SegmentedButton(
-                        selected = categoryMode == mode,
-                        onClick = { 
-                            categoryMode = mode 
-                            selectedCategoryValue = null // Reset nested view
-                        },
-                        shape = SegmentedButtonDefaults.itemShape(index = index, count = WordCategoryMode.values().size)
+            Box(modifier = Modifier.fillMaxWidth(0.5f)) {
+                Button(
+                    onClick = { isMenuExpanded = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    ),
+
+                ) {
+                    Row(
+                        modifier = Modifier.offset(-9.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(when(mode) {
-                            WordCategoryMode.All -> "全部"
-                            WordCategoryMode.POS -> "詞性"
-                            WordCategoryMode.Song -> "歌曲"
-                        })
+                        if(isMenuExpanded)
+                            Icon(imageVector = Icons.Default.ArrowDropDown,
+                                contentDescription = "category selector down",
+                            )
+                        else
+                            Icon(imageVector = Icons.Default.ArrowRight,
+                                contentDescription = "category selector right",
+                            )
+                        Text(
+                            text = "分類方式 : ${when(categoryMode) {
+                                WordCategoryMode.All -> "全部"
+                                WordCategoryMode.POS -> "詞性"
+                                WordCategoryMode.Song -> "歌曲"
+                            }}",
+                            style = MaterialTheme.typography.labelLarge,
+                        )
+                    }
+                }
+
+                
+                DropdownMenu(
+                    expanded = isMenuExpanded,
+                    onDismissRequest = { isMenuExpanded = false },
+                    modifier = Modifier.fillMaxWidth(0.45f)
+                ) {
+                    WordCategoryMode.values().forEach { mode ->
+                        DropdownMenuItem(
+                            text = { 
+                                Text(when(mode) {
+                                    WordCategoryMode.All -> "全部"
+                                    WordCategoryMode.POS -> "詞性"
+                                    WordCategoryMode.Song -> "歌曲"
+                                })
+                            },
+                            onClick = {
+                                categoryMode = mode
+                                selectedCategoryValue = null
+                                isMenuExpanded = false
+                            }
+                        )
                     }
                 }
             }
