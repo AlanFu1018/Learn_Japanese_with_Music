@@ -14,11 +14,29 @@ import org.jsoup.Jsoup
 class LyricsRepository(private val japaneseProcessor: JapaneseProcessor, private var settingsManager: SettingsManager) {
 
     /**
-     * 搜尋歌曲列表
+     * 搜尋歌曲列表，包含過濾、排序與分頁
      */
-    suspend fun searchSongs(query: String): List<GeniusSong> = withContext(Dispatchers.IO) {
-        val searchResponse = RetrofitClient.geniusService.searchSongs(query)
-        searchResponse.response.hits.map { it.result }
+    suspend fun searchSongs(query: String, page: Int = 1): List<GeniusSong> = withContext(Dispatchers.IO) {
+        val searchResponse = RetrofitClient.geniusService.searchSongs(query, page)
+        val songs = searchResponse.response.hits.map { it.result }
+        
+        // 1. 過濾掉以 Genius 開頭的歌手 (如 Genius Romanizations, Genius English Translations 等)
+        val filteredSongs = songs.filter { !it.primary_artist.name.startsWith("Genius") }
+        
+        // 2. 優先顯示標題或歌手包含日文的歌曲
+        filteredSongs.sortedByDescending { song ->
+            val hasJapanese = containsJapanese(song.title) || containsJapanese(song.primary_artist.name)
+            if (hasJapanese) 1 else 0
+        }
+    }
+
+    private fun containsJapanese(text: String): Boolean {
+        return text.any { char ->
+            // 檢查是否為平假名、片假名或常用日文漢字區域
+            char in '\u3040'..'\u309F' || // 平假名
+            char in '\u30A0'..'\u30FF' || // 片假名
+            char in '\u4E00'..'\u9FAF'    // 漢字
+        }
     }
 
     /**

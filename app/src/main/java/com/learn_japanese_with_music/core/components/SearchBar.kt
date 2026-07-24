@@ -32,7 +32,8 @@ fun SearchBar(query : String,
         onValueChange = onQueryChange,
         placeholder = {
             Text("Search",
-                color = MaterialTheme.colorScheme.primaryContainer
+                color = MaterialTheme.colorScheme.primaryContainer,
+                style = MaterialTheme.typography.bodyMedium
             )
         },
         modifier = Modifier.fillMaxWidth(),

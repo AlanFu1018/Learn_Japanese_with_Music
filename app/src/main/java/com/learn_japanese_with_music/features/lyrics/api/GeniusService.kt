@@ -7,6 +7,8 @@ import retrofit2.http.Query
 interface GeniusService {
     @GET("search")
     suspend fun searchSongs(
-        @Query("q") query: String
+        @Query("q") query: String,
+        @Query("page") page: Int = 1,
+        @Query("per_page") perPage: Int = 20
     ): GeniusResponse
 }

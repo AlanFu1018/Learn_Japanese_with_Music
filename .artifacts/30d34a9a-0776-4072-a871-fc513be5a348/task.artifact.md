@@ -1,11 +1,4 @@
-- [x] 實作資料持久化層 (`SavedWord` Entity, DAO, 並更新 `AppDatabase`)
-- [x] 優化 `VocabularyCardContent`：
-    - [x] 新增收藏/移除收藏按鈕
-    - [x] 實作筆記編輯與自動儲存功能
-    - [x] 調整載入優先級 (優先讀取收藏)
-- [x] 實作 `WordCardPage` 管理頁面：
-    - [x] 頂部搜尋與導覽
-    - [x] 類別選擇器 (全部、詞性、歌曲)
-    - [x] 實作歌曲類別顯示 (含封面圖背景)
-- [x] 更新全域導航：在 Drawer 新增 "Word Card" 選項
-- [x] 驗證功能整合與快取一致性
+- [ ] 更新 `GeniusService.kt` 支援分頁參數 (`page`, `per_page`)
+- [ ] 修改 `LyricsRepository.kt` 實作過濾與日文優先排序邏輯
+- [ ] 修改 `LyricPage.kt` 實作無限捲動與分頁狀態管理
+- [ ] 驗證搜尋結果品質與自動加載功能

@@ -20,8 +20,9 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -86,7 +87,12 @@ fun LyricPage(
     var searchResults by remember { mutableStateOf<List<GeniusSong>>(emptyList()) }
     var lyrics by remember { mutableStateOf<SongData?>(null) }
     var isLoading by remember { mutableStateOf(false) }
+    var isMoreLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    
+    var currentPage by remember { mutableStateOf(1) }
+    var isFullListLoaded by remember { mutableStateOf(false) }
+    
     val scope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
     val isImeVisible = WindowInsets.isImeVisible
@@ -119,18 +125,34 @@ fun LyricPage(
     }
 
     // 封裝搜尋邏輯
-    fun performSearch() {
-        focusManager.clearFocus() // 開始搜尋時先清除焦點收起鍵盤
-        scope.launch {
+    fun performSearch(isLoadMore: Boolean = false) {
+        if (!isLoadMore) {
+            focusManager.clearFocus()
             isLoading = true
-            errorMessage = null
-            lyrics = null
+            searchResults = emptyList()
+            currentPage = 1
+            isFullListLoaded = false
+        } else {
+            isMoreLoading = true
+        }
+        
+        errorMessage = null
+        lyrics = null
+        
+        scope.launch {
             try {
-                searchResults = repository.searchSongs(query)
+                val newResults = repository.searchSongs(query, if (isLoadMore) currentPage + 1 else 1)
+                if (newResults.isEmpty()) {
+                    isFullListLoaded = true
+                } else {
+                    searchResults = if (isLoadMore) searchResults + newResults else newResults
+                    if (isLoadMore) currentPage++
+                }
             } catch (e: Exception) {
                 errorMessage = e.message
             } finally {
                 isLoading = false
+                isMoreLoading = false
             }
         }
     }
@@ -208,7 +230,12 @@ fun LyricPage(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(searchResults) { song ->
+                    itemsIndexed(searchResults) { index, song ->
+                        // 觸發加載更多 (滑動到接近末尾時)
+                        if (index >= searchResults.size - 4 && !isMoreLoading && !isFullListLoaded) {
+                            performSearch(isLoadMore = true)
+                        }
+                        
                         SearchResultItem(song = song) {
                             scope.launch {
                                 isLoading = true
@@ -220,6 +247,18 @@ fun LyricPage(
                                 } finally {
                                     isLoading = false
                                 }
+                            }
+                        }
+                    }
+                    
+                    // 底部加載指示器
+                    if (isMoreLoading) {
+                        item(span = { GridItemSpan(2) }) {
+                            Box(
+                                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(modifier = Modifier.size(32.dp))
                             }
                         }
                     }
