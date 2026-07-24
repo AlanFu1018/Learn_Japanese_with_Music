@@ -27,6 +27,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -60,6 +61,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.google.ai.client.generativeai.type.content
 import com.learn_japanese_with_music.core.components.HomeRectangleButton
 import com.learn_japanese_with_music.core.components.SearchBar
 import com.learn_japanese_with_music.core.data.SettingsManager
@@ -162,49 +164,6 @@ fun LyricPage(
                         onQueryChange = { query = it },
                         performSearch = { performSearch() }
                     )
-
-//                    OutlinedTextField(
-//                        value = query,
-//                        onValueChange = { query = it },
-//                        placeholder = {
-//                            Text("Search",
-//                            color = MaterialTheme.colorScheme.primaryContainer
-//                            )
-//                        },
-//                        modifier = Modifier.weight(1f),
-//                        shape = CircleShape,
-//                        textStyle = MaterialTheme.typography.bodyMedium.copy(
-//                            color = MaterialTheme.colorScheme.primaryContainer
-//                        ),
-//                        colors = OutlinedTextFieldDefaults.colors(
-//                            focusedTextColor = MaterialTheme.colorScheme.primaryContainer,
-//                            unfocusedTextColor = MaterialTheme.colorScheme.primaryContainer,
-//                            focusedContainerColor = Color.White,
-//                            unfocusedContainerColor = Color.White,
-//                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-//                            unfocusedBorderColor = MaterialTheme.colorScheme.outline
-//                        ),
-//                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-//                        keyboardActions = KeyboardActions(
-//                            onSearch = { performSearch() }
-//                        ),
-//                        trailingIcon = {
-//                            FilledIconButton (
-//                                onClick = { performSearch() },
-//                                colors = IconButtonDefaults.filledIconButtonColors(
-//                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-//                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-//                                ),
-//                                modifier = Modifier.size(55.dp).offset(x = -5.dp),
-//                                shape = CircleShape
-//                            ) {
-//                                Icon(Icons.Default.Search,
-//                                    contentDescription = "Search",
-//                                    modifier = Modifier.size(30.dp)
-//                                )
-//                            }
-//                        },
-//                    )
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -301,12 +260,18 @@ fun SearchResultItem(song: GeniusSong, onClick: () -> Unit) {
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            AsyncImage(
-                model = song.song_art_image_thumbnail_url,
-                contentDescription = song.title,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
+            if(song.song_art_image_thumbnail_url.equals("Cover Not Found"))
+                Icon(
+                    Icons.Default.Image,
+                    contentDescription = "Cover Not Found"
+                )
+            else
+                AsyncImage(
+                    model = song.song_art_image_thumbnail_url,
+                    contentDescription = song.title,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
             
             // 底部文字區域背景遮罩 (漸層)
             Box(

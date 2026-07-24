@@ -1,58 +1,41 @@
-# 單字卡收藏功能與單字管理頁面實作計畫
+# 優化 Genius API 搜尋結果與實作分頁加載計畫
 
-本計畫旨在實作單字卡的「永久收藏」功能，並建立一個專屬的「Word Card」頁面，讓使用者可以分類、搜尋並編輯已收藏的單字與筆記。
+根據 `fix.txt` 的指示，本計畫將優化搜尋結果的品質（優先顯示日文歌曲、過濾羅馬拼音帳號），並實作無限捲動（Infinite Scroll）功能以支援自動更新更多搜尋結果。
 
 ## 建議的變更內容
 
-### 1. 資料持久化層 (`core/data/database`)
+### 1. API 介面擴充
 
-#### [NEW] [SavedWord.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/core/data/database/SavedWord.kt)
-- 建立 `SavedWord` Entity，儲存永久收藏的單字。
-- 欄位包含：`word`, `contextLine`, `splitMode` (主鍵組合), `reading`, `partOfSpeech` (JSON), `jlptLevel`, `generalMeaning`, `contextualMeaning`, `commonUsages` (JSON), `notes` (筆記), `songTitle`, `songArtist`, `timestamp`。
+#### [MODIFY] [GeniusService.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/features/lyrics/api/GeniusService.kt)
+- 更新 `searchSongs` 函式，新增 `page` (頁碼) 與 `per_page` (每頁數量) 參數。
 
-#### [NEW] [SavedWordDao.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/core/data/database/SavedWordDao.kt)
-- 提供 CRUD 操作：插入、刪除、讀取單一單字、讀取全部、更新筆記。
+### 2. 資料層邏輯優化
 
-#### [MODIFY] [AppDatabase.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/core/data/database/AppDatabase.kt)
-- 將 `SavedWord` 加入資料庫實體列表。
+#### [MODIFY] [LyricsRepository.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/features/lyrics/repository/LyricsRepository.kt)
+- **過濾邏輯**：過濾掉 `primary_artist.name == "Genius Romanizations"` 的結果。
+- **優先級排序**：實作簡單的日文偵測邏輯。若標題或歌手包含日文字元（假名或漢字），則優先排在前面。
+- **分頁支援**：`searchSongs` 現在應接受 `page` 參數。
 
-### 2. 單字卡 UI 優化 (`features/vocabulary/ui`)
+### 3. UI 介面與導航優化
 
-#### [MODIFY] [VocabularyCard.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/features/vocabulary/ui/VocabularyCard.kt)
-- **載入優先級**：`SavedWord` > `WordCache` > Gemini API。
-- **右上角操作**：
-    - 若未收藏：顯示 (+) 按鈕，點擊後將資料（含當前歌曲資訊）存入 `SavedWord`。
-    - 若已收藏：顯示 (Delete) 按鈕，點擊後移除收藏。
-- **筆記功能**：若單字處於已收藏狀態，底部顯示一個可編輯的 `OutlinedTextField` 供輸入筆記，並實作自動儲存。
-- **參數擴充**：`VocabularyCardContent` 需額外接收 `songTitle` 與 `artist`。
-
-### 3. Word Card 管理頁面 (`features/vocabulary/ui`)
-
-#### [NEW] [WordCardPage.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/features/vocabulary/ui/WordCardPage.kt)
-- **頂部欄**：包含導覽按鈕與搜尋框（支援日文或中文意檢索）。
-- **分類選擇器**：提供「全部」、「詞性」、「所屬歌曲」切換按鈕。
-- **內容展示**：
-    - **全部**：使用 `LazyColumn` 顯示所有單字。
-    - **詞性/歌曲**：先以網格卡片（效仿 SearchResult）顯示各個類別。點擊類別後，顯示該類別下的單字清單。
-- **點擊行為**：點擊單字卡片應能彈出相同風格的詳情彈窗進行編輯。
-
-### 4. 全域導航更新 (`MainActivity`)
-
-#### [MODIFY] [MainActivity.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/MainActivity.kt)
-- 更新 `Screen` enum 加入 `WordCard`。
-- 在 Drawer 中新增 "Word Card" 項目與對應圖示。
+#### [MODIFY] [LyricPage.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/features/lyrics/ui/LyricPage.kt)
+- **狀態管理**：
+    - 新增 `currentPage` 追蹤目前載入到第幾頁。
+    - 新增 `isFullListLoaded` 標記是否已無更多結果。
+    - 新增 `isMoreLoading` 處理分頁載入時的讀取狀態。
+- **無限捲動實作**：
+    - 監測 `LazyVerticalGrid` 的捲動狀態。
+    - 當使用者滑動到底部且尚未到達最後一頁時，自動觸發 `repository.searchSongs(query, currentPage + 1)`。
+- **結果處理**：新抓取的結果應「附加（Append）」到現有的 `searchResults` 列表末尾，而非替換。
 
 ## 驗證計畫
 
 ### 手動驗證
-1.  **收藏功能**：在歌詞頁點擊單字分析後，點擊右上方 (+)，確認按鈕切換為刪除圖示。
-2.  **筆記驗證**：輸入筆記並關閉彈窗，再次開啟該單字，確認筆記內容已正確讀取。
-3.  **頁面分類**：進入 Word Card 頁面，切換不同分類方式，確認歌曲與詞性分組正確。
-4.  **搜尋驗證**：在 Word Card 頁面搜尋單字或翻譯關鍵字，確認過濾功能正常。
-5.  **跨歌曲引用**：在同一首歌點擊已收藏單字，確認直接載入本地收藏內容（含筆記），不顯示分析動畫。
+1.  **過濾驗證**：搜尋知名日文歌（如 "Lemon"），確認搜尋結果中不會出現 "Genius Romanizations" 帳號發布的拼音版本。
+2.  **優先級驗證**：搜尋關鍵字時，包含日文原文的結果應出現在列表最上方。
+3.  **無限捲動驗證**：滑動到搜尋結果底部，確認會出現載入動畫並自動載入更多卡片。
+4.  **穩定性測試**：快速捲動並頻繁搜尋，確認不會出現重複資料或 UI 崩潰。
 
-## Open Questions
-
-> [!IMPORTANT]
-> **關於「類別卡片」的圖片**
-> 在「所屬歌曲」分類中，是否要顯示該歌曲的封面圖作為類別卡片的背景？
+> [!NOTE]
+> **關於優先級排序**
+> 由於 Genius API 本身不支援語言篩選，我們會對每一頁抓回來的 20 筆資料進行本地排序。這能保證每頁最相關的日文內容會優先顯示在使用者面前。

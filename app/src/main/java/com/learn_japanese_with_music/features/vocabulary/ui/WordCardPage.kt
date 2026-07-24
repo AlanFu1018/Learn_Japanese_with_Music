@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -33,6 +34,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.google.gson.Gson
 import com.learn_japanese_with_music.core.components.HomeRectangleButton
+import com.learn_japanese_with_music.core.components.SearchBar
 import com.learn_japanese_with_music.core.data.SettingsManager
 import com.learn_japanese_with_music.core.data.database.AppDatabase
 import com.learn_japanese_with_music.core.data.database.SavedWord
@@ -43,7 +45,7 @@ import kotlinx.coroutines.withContext
 
 enum class WordCategoryMode { All, POS, Song }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun WordCardPage(
     settingsManager: SettingsManager,
@@ -52,7 +54,7 @@ fun WordCardPage(
     val context = LocalContext.current
     val database = remember { AppDatabase.getDatabase(context) }
     val scope = rememberCoroutineScope()
-    
+
     var searchQuery by remember { mutableStateOf("") }
     var categoryMode by remember { mutableStateOf(WordCategoryMode.All) }
     var savedWords by remember { mutableStateOf<List<SavedWord>>(emptyList()) }
@@ -64,6 +66,29 @@ fun WordCardPage(
     // Word detail dialog state
     var selectedWordForDetail by remember { mutableStateOf<SavedWord?>(null) }
     val sheetState = rememberModalBottomSheetState()
+    
+    // 搜尋狀態
+    var searchResults by remember { mutableStateOf<List<SavedWord>>(emptyList()) }
+    var isSearching by remember { mutableStateOf(false) }
+    
+    val focusManager = LocalFocusManager.current
+    val isImeVisible = WindowInsets.isImeVisible
+
+    // 搜尋函式
+    fun performSearch() {
+        focusManager.clearFocus()
+        if (searchQuery.isBlank()) {
+            isSearching = false
+            return
+        }
+        
+        searchResults = savedWords.filter {
+            it.word.contains(searchQuery, ignoreCase = true) || 
+            it.generalMeaning.contains(searchQuery, ignoreCase = true) ||
+            it.contextualMeaning.contains(searchQuery, ignoreCase = true)
+        }
+        isSearching = true
+    }
 
     // Fetch words on launch or when database changes
     LaunchedEffect(Unit) {
@@ -72,10 +97,11 @@ fun WordCardPage(
         }
     }
 
-    val filteredWords = savedWords.filter {
-        it.word.contains(searchQuery, ignoreCase = true) || 
-        it.generalMeaning.contains(searchQuery, ignoreCase = true) ||
-        it.contextualMeaning.contains(searchQuery, ignoreCase = true)
+    // 當鍵盤收合時，主動清除焦點以隱藏游標
+    LaunchedEffect(isImeVisible) {
+        if (!isImeVisible) {
+            focusManager.clearFocus()
+        }
     }
 
     Surface(
@@ -94,18 +120,13 @@ fun WordCardPage(
             ) {
                 HomeRectangleButton(onClick = onMenuClick)
                 Spacer(modifier = Modifier.width(12.dp))
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { searchQuery = it },
-                    modifier = Modifier.weight(1f),
-                    shape = CircleShape,
-                    placeholder = { Text("搜尋單字或釋義...", style = MaterialTheme.typography.bodyMedium) },
-                    trailingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                    singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White
-                    )
+                SearchBar(
+                    query = searchQuery,
+                    onQueryChange = { 
+                        searchQuery = it
+                        if (it.isBlank()) isSearching = false
+                    },
+                    performSearch = { performSearch() }
                 )
             }
 
@@ -175,9 +196,25 @@ fun WordCardPage(
 
             // Content Area
             Box(modifier = Modifier.weight(1f)) {
-                if (selectedCategoryValue != null) {
+                if (isSearching) {
+                    // 顯示搜尋結果
+                    Column {
+                        Text(
+                            text = "搜尋結果: \"$searchQuery\"",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                        SavedWordGrid(searchResults) { selectedWordForDetail = it }
+                    }
+                    
+                    androidx.activity.compose.BackHandler {
+                        isSearching = false
+                        searchQuery = ""
+                    }
+                } else if (selectedCategoryValue != null) {
                     // Nested View: List of words in a specific category
-                    val nestedWords = filteredWords.filter {
+                    val nestedWords = savedWords.filter {
                         when(categoryMode) {
                             WordCategoryMode.POS -> it.partOfSpeech.contains(selectedCategoryValue!!)
                             WordCategoryMode.Song -> it.songTitle == selectedCategoryValue
@@ -203,10 +240,10 @@ fun WordCardPage(
                     // Main View
                     when (categoryMode) {
                         WordCategoryMode.All -> {
-                            SavedWordGrid(filteredWords) { selectedWordForDetail = it }
+                            SavedWordGrid(savedWords) { selectedWordForDetail = it }
                         }
                         WordCategoryMode.POS -> {
-                            val posGroups = filteredWords.flatMap { 
+                            val posGroups = savedWords.flatMap { 
                                 try { Gson().fromJson<List<String>>(it.partOfSpeech, object : com.google.gson.reflect.TypeToken<List<String>>() {}.type) } 
                                 catch (e: Exception) { emptyList() }
                             }.distinct().filter { it != "*" }
@@ -214,7 +251,7 @@ fun WordCardPage(
                             CategoryGrid(posGroups, null) { selectedCategoryValue = it }
                         }
                         WordCategoryMode.Song -> {
-                            val songGroups = filteredWords.groupBy { it.songTitle }
+                            val songGroups = savedWords.groupBy { it.songTitle }
                             val songList = songGroups.map { it.key to it.value.first().songCover }
                             
                             CategoryGrid(songList.map { it.first }, songList) { selectedCategoryValue = it }
