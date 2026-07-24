@@ -1,9 +1,11 @@
-- [ ] 更新 `LyricsModels.kt` (新增 `partOfSpeech` 欄位至 `LyricSegment`)
-- [ ] 更新 `WordAnalysis.kt` (新增 `UsageExample` 並修改 `WordAnalysis` 結構)
-- [ ] 修改 `JapaneseProcessor.kt` (提取並傳遞詞性資訊)
-- [ ] 更新 `SettingsManager.kt` (新增 `geminiModel` 屬性，預設 `gemini-3.1-flash-lite`)
-- [ ] 更新 `SettingsPage.kt` (新增 Gemini Model 名稱輸入框)
-- [ ] 最佳化 `GeminiAnalyzer.kt` (更新 Prompt 並支援動態模型)
-- [ ] 更新 `WordCache.kt` (同步模型變動，儲存 JSON 化的例句)
-- [ ] 更新 `VocabularyCard.kt` (顯示 Sudachi 詞性與結構化例句)
-- [ ] 驗證 JSON 解析錯誤已修正
+- [x] 實作資料持久化層 (`SavedWord` Entity, DAO, 並更新 `AppDatabase`)
+- [x] 優化 `VocabularyCardContent`：
+    - [x] 新增收藏/移除收藏按鈕
+    - [x] 實作筆記編輯與自動儲存功能
+    - [x] 調整載入優先級 (優先讀取收藏)
+- [x] 實作 `WordCardPage` 管理頁面：
+    - [x] 頂部搜尋與導覽
+    - [x] 類別選擇器 (全部、詞性、歌曲)
+    - [x] 實作歌曲類別顯示 (含封面圖背景)
+- [x] 更新全域導航：在 Drawer 新增 "Word Card" 選項
+- [x] 驗證功能整合與快取一致性

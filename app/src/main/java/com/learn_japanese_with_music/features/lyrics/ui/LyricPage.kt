@@ -273,7 +273,10 @@ fun LyricPage(
                     segment = selectedSegment!!,
                     contextLine = selectedContextLine,
                     settingsManager = settingsManager,
-                    splitMode = currentMode.name
+                    splitMode = currentMode.name,
+                    songTitle = lyrics?.title ?: "Unknown",
+                    songArtist = lyrics?.artist ?: "Unknown",
+                    songCover = lyrics?.cover ?: ""
                 )
             }
         }

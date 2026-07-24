@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.DrawerValue
@@ -36,10 +37,11 @@ import com.learn_japanese_with_music.features.lyrics.processor.JapaneseProcessor
 import com.learn_japanese_with_music.features.lyrics.repository.LyricsRepository
 import com.learn_japanese_with_music.features.lyrics.ui.LyricPage
 import com.learn_japanese_with_music.features.settings.ui.SettingsPage
+import com.learn_japanese_with_music.features.vocabulary.ui.WordCardPage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-enum class Screen { Search, Settings }
+enum class Screen { Search, Settings, WordCard }
 
 class MainActivity : ComponentActivity() {
     private val japaneseProcessor = JapaneseProcessor.getInstance()
@@ -92,6 +94,16 @@ class MainActivity : ComponentActivity() {
                                     },
                                     icon = { Icon(Icons.Default.Search, contentDescription = null) }
                                 )
+
+                                NavigationDrawerItem(
+                                    label = { Text("Word Card", style = MaterialTheme.typography.titleMedium) },
+                                    selected = currentScreen == Screen.WordCard,
+                                    onClick = {
+                                        currentScreen = Screen.WordCard
+                                        scope.launch { drawerState.close() }
+                                    },
+                                    icon = { Icon(Icons.Default.MenuBook, contentDescription = null) }
+                                )
                                 
                                 NavigationDrawerItem(
                                     label = { Text("Settings", style = MaterialTheme.typography.titleMedium) },
@@ -124,6 +136,12 @@ class MainActivity : ComponentActivity() {
                                     selectedSudachiMode = newMode
                                     settingsManager.sudachiSplitMode = newMode
                                 },
+                                onMenuClick = { scope.launch { drawerState.open() } }
+                            )
+                        }
+                        Screen.WordCard -> {
+                            WordCardPage(
+                                settingsManager = settingsManager,
                                 onMenuClick = { scope.launch { drawerState.open() } }
                             )
                         }

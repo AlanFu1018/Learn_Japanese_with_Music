@@ -1,56 +1,58 @@
-# 修復 Gemini 分析 JSON 錯誤與 Prompt 優化計畫
+# 單字卡收藏功能與單字管理頁面實作計畫
 
-根據 `fix.txt` 的指示，本計畫將修復 JSON 解析錯誤，優化 Gemini 的分析提示詞，並擴充設定頁面以支援自定義 Gemini 模型。
+本計畫旨在實作單字卡的「永久收藏」功能，並建立一個專屬的「Word Card」頁面，讓使用者可以分類、搜尋並編輯已收藏的單字與筆記。
 
 ## 建議的變更內容
 
-### 1. 資料模型更新
+### 1. 資料持久化層 (`core/data/database`)
 
-#### [MODIFY] [LyricsModels.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/features/lyrics/model/LyricsModels.kt)
-- **`LyricSegment`**：新增 `partOfSpeech: List<String>` 欄位，儲存從 Sudachi 取得的詞性。
+#### [NEW] [SavedWord.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/core/data/database/SavedWord.kt)
+- 建立 `SavedWord` Entity，儲存永久收藏的單字。
+- 欄位包含：`word`, `contextLine`, `splitMode` (主鍵組合), `reading`, `partOfSpeech` (JSON), `jlptLevel`, `generalMeaning`, `contextualMeaning`, `commonUsages` (JSON), `notes` (筆記), `songTitle`, `songArtist`, `timestamp`。
 
-#### [MODIFY] [WordAnalysis.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_music/app/src/main/java/com/learn_japanese_with_music/features/vocabulary/model/WordAnalysis.kt)
-- 新增 **`UsageExample`** 資料類別，包含 `japanese`, `reading`, `translation`。
-- 更新 **`WordAnalysis`**，將 `commonUsages` 的類型從 `List<String>` 改為 `List<UsageExample>`。
-- 移除 `partOfSpeech` 欄位（改由 Sudachi 提供）。
+#### [NEW] [SavedWordDao.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/core/data/database/SavedWordDao.kt)
+- 提供 CRUD 操作：插入、刪除、讀取單一單字、讀取全部、更新筆記。
 
-### 2. 分詞邏輯優化
+#### [MODIFY] [AppDatabase.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/core/data/database/AppDatabase.kt)
+- 將 `SavedWord` 加入資料庫實體列表。
 
-#### [MODIFY] [JapaneseProcessor.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/features/lyrics/processor/JapaneseProcessor.kt)
-- 在 `processLine` 中，從 `morpheme.partOfSpeech()` 提取詞性列表並存入 `LyricSegment`。
-
-### 3. 設定功能擴充
-
-#### [MODIFY] [SettingsManager.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/core/data/SettingsManager.kt)
-- 新增 `geminiModel` 屬性，預設值為 `gemini-1.5-flash` (或 `gemini-3.1-flash-lite`)。
-
-#### [MODIFY] [SettingsPage.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/features/settings/ui/SettingsPage.kt)
-- 新增一個 `OutlinedTextField` 供使用者輸入 **Gemini Model Name**。
-
-### 4. Gemini 分析與快取層優化
-
-#### [MODIFY] [GeminiAnalyzer.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/features/vocabulary/api/GeminiAnalyzer.kt)
-- 建構子現在應接受 `modelName`。
-- 更新 `analyzeWord` 方法：
-    - 接收 `pos: List<String>` 作為參數。
-    - **優化 Prompt**：
-        - 告知 Gemini 該單字的詞性（由 Sudachi 提供）。
-        - 要求 `general_meaning` 貼近歌詞意境。
-        - 要求 `common_usages` 需與歌詞中的用法相關，且必須回傳包含 `japanese`, `reading`, `translation` 的 JSON 物件。
-        - 移除 JSON 中的 `part_of_speech` 請求。
-
-#### [MODIFY] [WordCache.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/core/data/database/WordCache.kt)
-- 更新 Entity 結構，移除 `partOfSpeech`（由本地 `LyricSegment` 即時提供，不需快取）。
+### 2. 單字卡 UI 優化 (`features/vocabulary/ui`)
 
 #### [MODIFY] [VocabularyCard.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/features/vocabulary/ui/VocabularyCard.kt)
-- 修改 `VocabularyCardContent` 的顯示邏輯：
-    - 從 `segment.partOfSpeech` 直接顯示詞性。
-    - 適配新的 `UsageExample` 資料結構進行顯示。
+- **載入優先級**：`SavedWord` > `WordCache` > Gemini API。
+- **右上角操作**：
+    - 若未收藏：顯示 (+) 按鈕，點擊後將資料（含當前歌曲資訊）存入 `SavedWord`。
+    - 若已收藏：顯示 (Delete) 按鈕，點擊後移除收藏。
+- **筆記功能**：若單字處於已收藏狀態，底部顯示一個可編輯的 `OutlinedTextField` 供輸入筆記，並實作自動儲存。
+- **參數擴充**：`VocabularyCardContent` 需額外接收 `songTitle` 與 `artist`。
+
+### 3. Word Card 管理頁面 (`features/vocabulary/ui`)
+
+#### [NEW] [WordCardPage.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/features/vocabulary/ui/WordCardPage.kt)
+- **頂部欄**：包含導覽按鈕與搜尋框（支援日文或中文意檢索）。
+- **分類選擇器**：提供「全部」、「詞性」、「所屬歌曲」切換按鈕。
+- **內容展示**：
+    - **全部**：使用 `LazyColumn` 顯示所有單字。
+    - **詞性/歌曲**：先以網格卡片（效仿 SearchResult）顯示各個類別。點擊類別後，顯示該類別下的單字清單。
+- **點擊行為**：點擊單字卡片應能彈出相同風格的詳情彈窗進行編輯。
+
+### 4. 全域導航更新 (`MainActivity`)
+
+#### [MODIFY] [MainActivity.kt](file:///C:/Users/fuala/AndroidStudioProjects/Learn_Japanese_with_Music/app/src/main/java/com/learn_japanese_with_music/MainActivity.kt)
+- 更新 `Screen` enum 加入 `WordCard`。
+- 在 Drawer 中新增 "Word Card" 項目與對應圖示。
 
 ## 驗證計畫
 
 ### 手動驗證
-1.  **JSON 解析測試**：點擊單字分析，確認不再出現 `Expected a string but was BEGIN_OBJECT` 錯誤。
-2.  **Prompt 準確度**：確認單字意思是否更貼合歌詞，且例句與歌詞用法相關。
-3.  **模型切換**：在設定頁更改模型名稱，確認分析功能依然運作（或回傳對應模型的錯誤）。
-4.  **詞性顯示**：確認顯示的是 Sudachi 原始的詞性分類。
+1.  **收藏功能**：在歌詞頁點擊單字分析後，點擊右上方 (+)，確認按鈕切換為刪除圖示。
+2.  **筆記驗證**：輸入筆記並關閉彈窗，再次開啟該單字，確認筆記內容已正確讀取。
+3.  **頁面分類**：進入 Word Card 頁面，切換不同分類方式，確認歌曲與詞性分組正確。
+4.  **搜尋驗證**：在 Word Card 頁面搜尋單字或翻譯關鍵字，確認過濾功能正常。
+5.  **跨歌曲引用**：在同一首歌點擊已收藏單字，確認直接載入本地收藏內容（含筆記），不顯示分析動畫。
+
+## Open Questions
+
+> [!IMPORTANT]
+> **關於「類別卡片」的圖片**
+> 在「所屬歌曲」分類中，是否要顯示該歌曲的封面圖作為類別卡片的背景？
