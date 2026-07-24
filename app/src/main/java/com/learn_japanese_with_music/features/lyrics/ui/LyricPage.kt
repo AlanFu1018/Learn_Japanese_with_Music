@@ -188,7 +188,7 @@ fun LyricPage(
                                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                                     contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                                 ),
-                                modifier = Modifier.size(55.dp).offset(x = -6.dp),
+                                modifier = Modifier.size(55.dp).offset(x = -5.dp),
                                 shape = CircleShape
                             ) {
                                 Icon(Icons.Default.Search,
